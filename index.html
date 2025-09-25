@@ -7,14 +7,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1E90FF">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
+  /* --- Global Styles --- */
   body { font-family: Arial,sans-serif; margin:0; padding:0; text-align:center; transition:background 0.5s ease; }
   body.logged-in { background:#000; color:white; }
   .hidden { display:none; }
   .form-container, .card-container, .card { background:#1E90FF; padding:30px; border-radius:16px; margin:10px auto; max-width:450px; color:white; transition:background 0.3s; }
   body.logged-in .card, body.logged-in .card-container { background:#111; }
-  input, button, select { width:90%; padding:12px; margin:8px 0; border-radius:8px; border:none; }
+  input, button { width:90%; padding:12px; margin:8px 0; border-radius:8px; border:none; }
   button { background-color:#32CD32; color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
   button:hover { background-color:#28a428; }
   .toggle-form { background:none; color:yellow; border:none; cursor:pointer; text-decoration:underline; }
@@ -47,12 +47,14 @@
   #installBanner button { margin-left:10px; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; border:none; color:white; }
   #installBanner #installBtn { background:#32CD32; }
   #installBanner #dismissInstall { background:#FF4500; }
+  /* Google CSE Dark Mode Styling */
   .gsc-results .gsc-webResult, .gsc-results .gsc-expansionArea { background:#111 !important; color:white !important; border:none !important; }
   .gsc-results .gs-title a { color:#32CD32 !important; }
 </style>
 </head>
 <body>
 
+<!-- Waves -->
 <div class="wave-container">
   <div class="wave wave1"></div>
   <div class="wave wave2"></div>
@@ -131,36 +133,11 @@
     <input type="text" id="publicInput" placeholder="Type a message">
     <button onclick="sendPublicMessage()">Send</button>
   </div>
-
-  <!-- WhatsApp Bot Deployment -->
-  <div class="card" id="botDeployCard">
-    <h2>Deploy WhatsApp Bot</h2>
-    <input type="text" id="botName" placeholder="Bot Name">
-    <textarea id="botContent" placeholder="Paste your bot JS code here..." style="height:120px;"></textarea>
-    <button onclick="deployBot()">Deploy Bot</button>
-
-    <p style="margin:10px 0;">Or drag & drop a zip of JS files here:</p>
-    <div id="zipDropArea" style="border:2px dashed #32CD32; padding:20px; border-radius:12px; cursor:pointer; color:#fff;">
-      Drag & Drop Zip Here or Click to Select
-      <input type="file" id="botZip" accept=".zip" style="display:none;">
-    </div>
-    <div id="zipFilesList" style="margin-top:10px; text-align:left;"></div>
-    <button onclick="deployZip()">Deploy Selected Zip</button>
-
-    <h3>Deployed Bots</h3
-<ul id="deployedBotsList"></ul>
-  </div>
-
-  <!-- Live Bot Console -->
-  <div class="card" id="liveBotsCard">
-    <h2>Live Bot Console</h2>
-    <div id="liveBotsContainer"></div>
-  </div>
 </div>
 
 <!-- Install Banner -->
 <div id="installBanner">
-  <span>Install Trashcore on your device for a better experience!</span>
+<span>Install Trashcore on your device for a better experience!</span>
   <button id="installBtn">Install</button>
   <button id="dismissInstall">No Thanks</button>
 </div>
@@ -173,8 +150,6 @@
   // --- Auth & UI ---
   let users = JSON.parse(localStorage.getItem('users')) || [];
   let publicMessages = JSON.parse(localStorage.getItem('publicMessages')) || [];
-  let deployedBots = JSON.parse(localStorage.getItem('deployedBots')) || [];
-
   if(localStorage.getItem('loggedInUser')) { 
     document.body.classList.add('logged-in'); 
     showMainContent(); 
@@ -217,6 +192,7 @@
     showLogin();
   }
 
+  // --- Exit Page ---
   function exitPage(){
     if(confirm('Are you sure you want to exit the page?')){
       window.open('', '_self');
@@ -231,8 +207,6 @@
     document.getElementById('mainContent').classList.remove('hidden');
     document.getElementById('menu').classList.remove('hidden');
     showPublicMessages();
-    showDeployedBots();
-    renderLiveBots();
   }
 
   function showLogin(){ document.getElementById('signupForm').classList.add('hidden'); document.getElementById('loginForm').classList.remove('hidden'); }
@@ -261,220 +235,47 @@
   }
   window.addEventListener('storage', e => { if(e.key==='publicMessages'){ publicMessages=JSON.parse(e.newValue)||[]; showPublicMessages(); } });
 
-  // --- Bot Deployment ---
-  function deployBot(){
-    const name = document.getElementById('botName').value.trim();
-    const content = document.getElementById('botContent').value.trim();
-    if(!name||!content){ alert('Fill both fields'); return; }
-    deployedBots.push({ name, code: content, status:'stopped' });
-    localStorage.setItem('deployedBots', JSON.stringify(deployedBots));
-    document.getElementById('botName').value='';
-    document.getElementById('botContent').value='';
-    alert(`Bot "${name}" deployed!`);
-    showDeployedBots();
-    renderLiveBots();
-  }
-
-  function showDeployedBots(){
-    const ul = document.getElementById('deployedBotsList');
-    ul.innerHTML='';
-    deployedBots.forEach((bot,i)=>{
-      const li = document.createElement('li');
-      li.innerHTML=`<span>${bot.name}</span><button onclick="removeBot(${i})">Remove</button>`;
-      ul.appendChild(li);
-    });
-  }
-
-  function removeBot(index){
-    if(confirm('Remove this bot?')){
-      deployedBots.splice(index,1);
-      localStorage.setItem('deployedBots', JSON.stringify(deployedBots));
-      showDeployedBots();
-      renderLiveBots();
-    }
-  }
-
-  // --- Live Bot Console ---
-  function renderLiveBots(){
-    const container = document.getElementById('liveBotsContainer');
-    container.innerHTML='';
-    deployedBots.forEach((bot, index)=>{
-      const botDiv = document.createElement('div');
-      botDiv.style.border='1px solid #32CD32';
-      botDiv.style.borderRadius='12px';
-      botDiv.style.margin='10px 0';
-      botDiv.style.padding='10px';
-      botDiv.style.background='#111';
-
-      const header = document.createElement('div');
-      header.style.display='flex';
-      header.style.justifyContent='space-between';
-      header.style.alignItems='center';
-      header.innerHTML = `<strong style="color:#32CD32">${bot.name}</strong>
-        <span>Status: <span id="botStatus${index}">${bot.status}</span></span>`;
-
-      const controls = document.createElement('div');
-      controls.style.display='flex';
-      controls.style.gap='5px';
-      controls.style.marginTop='5px';
-      controls.innerHTML = `
-        <button onclick="startBot(${index})">Start</button>
-        <button onclick="stopBot(${index})">Stop</button>
-        <button onclick="restartBot(${index})">Restart</button>
-        <button onclick="removeBot(${index})">Remove</button>
-      `;
-
-      const logArea = document.createElement('div');
-      logArea.id = `botLog${index}`;
-      logArea.style.background='#222';
-      logArea.style.color='#0f0';
-      logArea.style.height='120px';
-      logArea.style.overflowY='auto';
-      logArea.style.marginTop='5px';
-      logArea.style.padding='5px';
-      logArea.style.borderRadius='8px';
-      logArea.textContent = `Bot "${bot.name}" is ${bot.status}`;
-
-      // Console input
-      const inputDiv = document.createElement('div');
-      inputDiv.style.display='flex';
-      inputDiv.style.gap='5px';
-      inputDiv.style.marginTop='5px';
-      const input = document.createElement('input');
-      input.type='text';
-      input.placeholder='Type command for bot...';
-      input.style.flex='1';
-      input.id = `botInput${index}`;
-      const sendBtn = document.createElement('button');
-      sendBtn.textContent='Send';
-      sendBtn.onclick = ()=>sendBotCommand(index);
-      inputDiv.appendChild(input);
-      inputDiv.appendChild(sendBtn);
-
-      botDiv.appendChild(header);
-      botDiv.appendChild(controls);
-      botDiv.appendChild(logArea);
-      botDiv.appendChild(inputDiv);
-
-      container.appendChild(botDiv);
-    });
-  }
-
-  function startBot(index){
-    const bot = deployedBots[index];
-    if(bot.status==='running'){ alert('Already running'); return; }
-
-    const logArea = document.getElementById(`botLog${index}`);
-    logArea.innerHTML = '';
-
-    function appendLog(message, color='lime'){
-      const p = document.createElement('p');
-      const time = new Date().toLocaleTimeString();
-      p.innerHTML = `<span style="color:gray">[${time}]</span> <span style="color:${color}">${message}</span>`;
-      logArea.appendChild(p);
-      logArea.scrollTop = logArea.scrollHeight;
-    }
-
+  // --- YouTube Music Search & Download ---
+  async function searchSong(){
+    const query = document.getElementById('songQuery').value.trim();
+    if(!query){ alert('Enter a song name or YouTube link'); return; }
+    const resultsDiv=document.getElementById('songResults'); resultsDiv.innerHTML='<p>Searching...</p>';
     try{
-      const originalLog = console.log;
-      const originalWarn = console.warn;
-      const originalError = console.error;
-
-      console.log = (...args) => appendLog(args.join(' '), 'lime');
-      console.warn = (...args) => appendLog(args.join(' '), 'yellow');
-      console.error = (...args) => appendLog(args.join(' '), 'red');
-
-      bot.func = new Function(bot.code);
-      bot.func();
-
-      bot.status='running';
-      appendLog(`Bot "${bot.name}" started successfully`, 'aqua');
-
-      console.log = originalLog;
-      console.warn = originalWarn;
-      console.error = originalError;
-
-    } catch(e){
-      console.error(`Error in bot ${bot.name}:`, e);
-      appendLog(`Error: ${e.message}`, 'red');
-      bot.status='error';
-    }
-
-    localStorage.setItem('deployedBots', JSON.stringify(deployedBots));
-    renderLiveBots();
+      const response = await fetch(`http://localhost:3000/api/searchYoutube?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      resultsDiv.innerHTML=''; if(data.length===0){ resultsDiv.innerHTML='<p>No results found.</p>'; return; }
+      const ul=document.createElement('ul');
+      data.forEach(video=>{ const li=document.createElement('li'); li.innerHTML=`<span>${video.title} (${video.duration})</span><span><a href="http://localhost:3000/api/download?videoId=${video.videoId}&type=video" title="Download Video"><i class="fas fa-video"></i></a><a href="http://localhost:3000/api/download?videoId=${video.videoId}&type=audio" title="Download Audio"><i class="fas fa-file-audio"></i></a></span>`; ul.appendChild(li); });
+      resultsDiv.appendChild(ul);
+    }catch(err){ console.error(err); resultsDiv.innerHTML='<p>Error fetching videos.</p>'; }
   }
 
-  function stopBot(index){
-    const bot = deployedBots[index];
-    if(bot.status!=='running'){ alert('Bot not running'); return; }
-    bot.status='stopped';
-    bot
-.func = null;
-    localStorage.setItem('deployedBots', JSON.stringify(deployedBots));
-    renderLiveBots();
+  // --- Google Search ---
+  function searchGoogle(){
+    const query=document.getElementById('googleQuery').value.trim();
+    if(!query){ alert('Enter a search query'); return; }
+    const resultsDiv=document.getElementById('googleResults');
+    resultsDiv.innerHTML=`<div class="gcse-search" data-query="${query}"></div>`;
+    if(window.google && google.search && google.search.cse && google.search.cse.element){ google.search.cse.element.render({ div:"googleResults", tag:'search' }); }
   }
 
-  function restartBot(index){
-    stopBot(index);
-    setTimeout(()=>startBot(index), 300);
+  // --- PWA Install Banner ---
+  let deferredPrompt;
+  const installBanner=document.getElementById('installBanner');
+  const installBtn=document.getElementById('installBtn');
+  const dismissBtn=document.getElementById('dismissInstall');
+  window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; if(/Mobi|Android/i.test(navigator.userAgent)){ installBanner.style.display='block'; }});
+  installBtn.addEventListener('click', async()=>{ installBanner.style.display='none'; if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; } });
+  dismissBtn.addEventListener('click', ()=>{ installBanner.style.display='none'; });
+
+  // --- Service Worker ---
+if('serviceWorker' in navigator){ 
+    navigator.serviceWorker.register('sw.js').then(()=>{
+      console.log('Service Worker registered'); 
+    }).catch(err=>{
+      console.error('Service Worker registration failed:', err);
+    }); 
   }
-
-  function sendBotCommand(index){
-    const input = document.getElementById(`botInput${index}`);
-    const cmd = input.value.trim();
-    if(!cmd) return;
-    const logArea = document.getElementById(`botLog${index}`);
-    const time = new Date().toLocaleTimeString();
-    const p = document.createElement('p');
-    p.innerHTML = `<span style="color:gray">[${time}]</span> <span style="color:orange">Command: ${cmd}</span>`;
-    logArea.appendChild(p);
-    logArea.scrollTop = logArea.scrollHeight;
-    input.value='';
-  }
-
-  // --- Drag & Drop Zip Upload ---
-  const zipDropArea = document.getElementById('zipDropArea');
-  const botZipInput = document.getElementById('botZip');
-  let selectedZipFile = null;
-
-  zipDropArea.addEventListener('click', ()=>botZipInput.click());
-  botZipInput.addEventListener('change', ()=>{ if(botZipInput.files.length>0){ selectedZipFile = botZipInput.files[0]; displayZipFiles(); } });
-
-  zipDropArea.addEventListener('dragover', (e)=>{ e.preventDefault(); zipDropArea.style.borderColor='#00FF00'; });
-  zipDropArea.addEventListener('dragleave', (e)=>{ e.preventDefault(); zipDropArea.style.borderColor='#32CD32'; });
-  zipDropArea.addEventListener('drop', async (e)=>{
-    e.preventDefault(); zipDropArea.style.borderColor='#32CD32';
-    selectedZipFile = e.dataTransfer.files[0];
-    displayZipFiles();
-  });
-
-  function displayZipFiles(){
-    const list = document.getElementById('zipFilesList');
-    list.innerHTML='';
-    if(!selectedZipFile) return;
-    list.textContent = `Selected file: ${selectedZipFile.name} (${(selectedZipFile.size/1024).toFixed(1)} KB)`;
-  }
-
-  async function deployZip(){
-    if(!selectedZipFile){ alert('Select a zip first'); return; }
-    const zip = await JSZip.loadAsync(selectedZipFile);
-    const files = [];
-    zip.forEach((relativePath, file) => { if(file.name.endsWith('.js')) files.push(file.name); });
-    if(files.length===0){ alert('No JS files found in zip'); return; }
-
-    for(const fName of files){
-      const fileData = await zip.file(fName).async('string');
-      const botName = fName.replace('.js','');
-      deployedBots.push({ name:botName, code:fileData, status:'stopped' });
-    }
-    localStorage.setItem('deployedBots', JSON.stringify(deployedBots));
-    selectedZipFile = null;
-    displayZipFiles();
-    showDeployedBots();
-    renderLiveBots();
-    alert(`Deployed ${files.length} bot(s) from zip`);
-  }
-
 </script>
 </body>
 </html>
