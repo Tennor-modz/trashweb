@@ -20,7 +20,7 @@
     position: absolute;
     width: 200%;
     height: 200px;
-    background: rgba(255,255,255,0.2); /* Default for gradient background */
+    background: rgba(255,255,255,0.2);
     border-radius: 43%;
     opacity: 0.3;
     animation: waveMove 8s linear infinite;
@@ -40,7 +40,7 @@
 
   /* Brighter waves after login */
   body.logged-in .wave {
-    background: rgba(255,255,255,0.6); /* Brighter on black */
+    background: rgba(255,255,255,0.6);
     opacity: 0.5;
   }
   body.logged-in .wave.wave2 {
@@ -51,7 +51,7 @@
          background: linear-gradient(135deg, #1E90FF 0%, #32CD32 100%);
          min-height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; position: relative;
          transition: background 0.5s ease; }
-  body.logged-in { background: #000; } /* Black background after login */
+  body.logged-in { background: #000; }
 
   .hidden { display:none; }
   .form-container, .card-container { background:#1E90FF; padding:40px 30px; border-radius:16px;
@@ -79,12 +79,24 @@
 
   /* Hamburger menu */
   .menu { position:absolute; top:20px; right:20px; display:inline-block; }
-  .menu-btn { background: rgba(255,255,255,0.8); border:none; padding:10px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.3s; }
+  .menu-btn {
+    background: rgba(255,255,255,0.8);
+    border:none;
+    padding:10px 15px;
+    border-radius:50px;
+    font-size:16px;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:5px;
+    transition:0.3s;
+  }
   .menu-btn:hover { background: rgba(255,255,255,1); }
   .menu-btn i { transition: transform 0.3s; }
   .menu-btn.open i { transform: rotate(90deg); }
 
-  /* Black dropdown with glow and smooth slide */
+  /* Dropdown */
   .dropdown {
     position:absolute;
     top:55px;
@@ -105,6 +117,15 @@
   .dropdown a { display:block; padding:12px 15px; text-decoration:none; color:#fff; font-weight:bold; transition:background 0.3s; }
   .dropdown a:hover { background:#222; }
 
+  /* Copyright */
+  .copyright {
+    text-align:center;
+    margin:20px 0;
+    color:white;
+    font-size:14px;
+    z-index:1;
+    position: relative;
+  }
 </style>
 </head>
 <body>
@@ -137,7 +158,9 @@
 
 <!-- Hamburger Menu -->
 <div class="menu hidden" id="menu">
-  <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+  <button class="menu-btn" id="menuBtn">
+    <i class="fas fa-bars"></i> <span>Menu</span>
+  </button>
   <div class="dropdown" id="dropdownMenu">
     <a href="https://t.me/YourUsername">Chat with Owner</a>
     <a href="https://www.youtube.com/channel/YourChannelID">YouTube Channel</a>
@@ -164,10 +187,18 @@
   </div>
 </div>
 
+<!-- Copyright -->
+<div class="copyright">
+  ©️ 2023-20?? by Trashcore Devs
+</div>
+
 <script>
 // Initialize users
 let users = JSON.parse(localStorage.getItem('users')) || [];
-if(localStorage.getItem('loggedInUser')) { document.body.classList.add('logged-in'); showMainContent(); }
+if(localStorage.getItem('loggedInUser')) { 
+  document.body.classList.add('logged-in'); 
+  showMainContent(); 
+}
 
 function isValidUsername(name) { return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
 function isValidPassword(pw) { return pw.length >=6; }
@@ -213,16 +244,30 @@ function showMainContent() {
   document.getElementById('menu').classList.remove('hidden');
 }
 
-function showLogin() { document.getElementById('signupForm').classList.add('hidden'); document.getElementById('loginForm').classList.remove('hidden'); }
-function showSignup() { document.getElementById('loginForm').classList.add('hidden'); document.getElementById('signupForm').classList.remove('hidden'); }
+function showLogin() { 
+  document.getElementById('signupForm').classList.add('hidden'); 
+  document.getElementById('loginForm').classList.remove('hidden'); 
+}
+
+function showSignup() { 
+  document.getElementById('loginForm').classList.add('hidden'); 
+  document.getElementById('signupForm').classList.remove('hidden'); 
+}
 
 // Hamburger menu toggle
 const menuBtn = document.getElementById('menuBtn');
 const dropdown = document.getElementById('dropdownMenu');
-menuBtn.addEventListener('click',()=>{ dropdown.classList.toggle('show'); menuBtn.classList.toggle('open'); });
-window.addEventListener('click',(event)=>{ 
-  if(!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn *')) {
-    dropdown.classList.remove('show'); menuBtn.classList.remove('open');
+
+menuBtn.addEventListener('click', () => { 
+  dropdown.classList.toggle('show'); 
+  menuBtn.classList.toggle('open'); 
+});
+
+// Close dropdown if clicked outside
+window.addEventListener('click', (event) => { 
+  if (!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn *')) {
+    dropdown.classList.remove('show'); 
+    menuBtn.classList.remove('open');
   }
 });
 </script>
