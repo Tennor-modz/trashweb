@@ -53,6 +53,7 @@
     <!-- Online Users -->
     <div id="onlineUsers" class="card">
       <h2>Online Users</h2>
+      <input type="text" id="searchUser" placeholder="Search users..." onkeyup="filterUsers()"><br>
       <ul id="onlineList" style="list-style:none; padding:0;"></ul>
     </div>
 
@@ -71,6 +72,7 @@
         <input type="text" id="newGroupName" placeholder="New group name">
         <button onclick="createGroup()">Create</button>
       </div>
+      <input type="text" id="searchGroup" placeholder="Search groups..." onkeyup="filterGroups()"><br>
       <ul id="groupList" style="list-style:none; padding:0; margin:10px 0; text-align:left;"></ul>
     </div>
 
@@ -125,8 +127,14 @@
       location.reload();
     }
 
-    function showSignup() { document.getElementById("signupForm").classList.remove("hidden"); document.getElementById("loginForm").classList.add("hidden"); }
-    function showLogin() { document.getElementById("loginForm").classList.remove("hidden"); document.getElementById("signupForm").classList.add("hidden"); }
+    function showSignup() { 
+      document.getElementById("signupForm").classList.remove("hidden"); 
+      document.getElementById("loginForm").classList.add("hidden"); 
+    }
+    function showLogin() { 
+      document.getElementById("loginForm").classList.remove("hidden"); 
+      document.getElementById("signupForm").classList.add("hidden"); 
+    }
 
     // Main Content
     function showMainContent() {
@@ -159,20 +167,22 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // Online Users
-    function showOnlineUsers() {
+    // Online Users with search
+    function filterUsers() {
+      const query = document.getElementById("searchUser").value.toLowerCase();
       const list = document.getElementById("onlineList");
       list.innerHTML = "";
       const me = localStorage.getItem("loggedInUser");
-      onlineUsers.forEach(u => {
-        if (u !== me) {
+      onlineUsers
+        .filter(u => u !== me && u.toLowerCase().includes(query))
+        .forEach(u => {
           const li = document.createElement("li");
           li.textContent = "🟢 " + u;
           li.onclick = () => openPrivateChat(u);
           list.appendChild(li);
-        }
-      });
+        });
     }
+    function showOnlineUsers() { filterUsers(); }
 
     // Private Chat
     function openPrivateChat(user) {
@@ -209,7 +219,7 @@
     }
     function getChatKey(u1, u2) { return [u1, u2].sort().join("_"); }
 
-    // Group Chat
+    // Groups with search
     function createGroup() {
       const name = document.getElementById("newGroupName").value.trim();
       if (!name) return alert("Enter a group name");
@@ -219,16 +229,20 @@
       document.getElementById("newGroupName").value = "";
       showGroups();
     }
-    function showGroups() {
+    function filterGroups() {
+      const query = document.getElementById("searchGroup").value.toLowerCase();
       const list = document.getElementById("groupList");
       list.innerHTML = "";
-      groups.forEach(g => {
-        const li = document.createElement("li");
-        li.textContent = "👥 " + g;
-        li.onclick = () => openGroupChat(g);
-        list.appendChild(li);
-      });
+      groups
+        .filter(g => g.toLowerCase().includes(query))
+        .forEach(g => {
+          const li = document.createElement("li");
+          li.textContent = "👥 " + g;
+          li.onclick = () => openGroupChat(g);
+          list.appendChild(li);
+        });
     }
+    function showGroups() { filterGroups(); }
     function openGroupChat(group) {
       currentGroup = group;
       document.getElementById("activeGroupChat").classList.remove("hidden");
