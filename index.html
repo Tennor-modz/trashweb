@@ -1,104 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Join Our Channels</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Our Channels</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body { font-family: Arial,sans-serif; margin:0; padding:0; text-align:center;
+         background: linear-gradient(135deg, #1E90FF 0%, #32CD32 100%);
+         min-height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; position: relative;}
+  .hidden { display:none; }
+  .form-container, .card-container { background:#1E90FF; padding:40px 30px; border-radius:16px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.15); color:white; max-width:400px; width:100%; margin:10px;
+      animation: fadeIn 0.8s ease-in-out; }
+  h1 { color:red; margin-bottom:20px; text-shadow:2px 2px 6px rgba(0,0,0,0.3); }
+  input { width:90%; padding:12px; margin:10px 0; border-radius:8px; border:none; }
+  button { width:95%; padding:12px; margin:10px 0; border-radius:8px; border:none; background-color:#32CD32;
+           color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
+  button:hover { background-color:#28a428; }
+  .toggle-form { background:none; color:yellow; border:none; cursor:pointer; margin-top:5px; text-decoration:underline; }
+  .card { background:#1E90FF; border-radius:16px; padding:40px 30px; max-width:450px; width:100%;
+         box-shadow:0 10px 25px rgba(0,0,0,0.15); text-align:center; color:white; }
+  .logo { width:100px; height:100px; border-radius:50%; margin-bottom:20px; }
+  .button { display:flex; justify-content:center; align-items:center; gap:10px; width:100%; margin:12px 0; 
+           padding:15px; font-size:18px; font-weight:bold; color:white; text-decoration:none; border-radius:12px;
+           background-size:200% 200%; cursor:pointer; }
+  .telegram { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
+  .whatsapp { background: linear-gradient(90deg, #32CD32, #00FF7F); }
+  .logout-btn { background-color:#FF4500; margin-top:15px; }
+  .logout-btn:hover { background-color:#e03e00; }
+  @keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #1E90FF 0%, #32CD32 100%);
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-
-    /* Top-right menu */
-    .menu { position: absolute; top: 20px; right: 20px; display: inline-block; }
-    .menu-btn { background: rgba(255,255,255,0.8); border: none; padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: background 0.3s; }
-    .menu-btn:hover { background: rgba(255,255,255,1); }
-    .dropdown { position: absolute; top: 45px; right: 0; background: white; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); overflow: hidden; min-width: 180px; z-index: 10; max-height: 0; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out; }
-    .dropdown.show { max-height: 500px; opacity: 1; }
-    .dropdown a { display: block; padding: 12px 15px; text-decoration: none; color: #333; font-weight: bold; transition: background 0.3s; }
-    .dropdown a:hover { background: #f0f0f0; }
-    @media (hover: hover) { .menu:hover .dropdown { max-height: 500px; opacity: 1; } }
-
-    /* Page title */
-    .page-title { color: red; font-size: 36px; margin-bottom: 30px; text-shadow: 2px 2px 6px rgba(0,0,0,0.3); }
-
-    .card { background: #1E90FF; border-radius: 16px; padding: 40px 30px; max-width: 450px; width: 100%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); text-align: center; animation: fadeIn 1s ease-in-out; color: white; }
-    .logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.3s; }
-    .logo:hover { transform: scale(1.05); }
-    h2 { color: #fff; margin-bottom: 15px; }
-    p { margin-bottom: 25px; font-size: 16px; color: #f0f0f0; }
-    .button { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; margin: 12px 0; padding: 15px; font-size: 18px; font-weight: bold; color: white; text-decoration: none; border-radius: 12px; transition: 0.5s; box-shadow: 0 6px 15px rgba(0,0,0,0.15); background-size: 200% 200%; }
-    .telegram { background: linear-gradient(90deg, #00BFFF, #1E90FF); background-position: 0% 50%; }
-    .whatsapp { background: linear-gradient(90deg, #32CD32, #00FF7F); background-position: 0% 50%; }
-    .button:hover { transform: scale(1.05); box-shadow: 0 8px 18px rgba(0,0,0,0.2); background-position: 100% 50%; }
-    .button i { font-size: 22px; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+  /* Hamburger menu */
+  .menu { position:absolute; top:20px; right:20px; display:inline-block; }
+  .menu-btn { background: rgba(255,255,255,0.8); border:none; padding:10px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.3s; }
+  .menu-btn:hover { background: rgba(255,255,255,1); }
+  .menu-btn i { transition: transform 0.3s; }
+  .menu-btn.open i { transform: rotate(90deg); }
+  .dropdown { position:absolute; top:55px; right:0; background:white; color:#333; border-radius:8px; box-shadow:0 6px 15px rgba(0,0,0,0.2); overflow:hidden; min-width:180px; max-height:0; opacity:0; transition:max-height 0.3s ease-out, opacity 0.3s ease-out; z-index:10; }
+  .dropdown.show { max-height:500px; opacity:1; }
+  .dropdown a { display:block; padding:12px 15px; text-decoration:none; color:#333; font-weight:bold; transition:background 0.3s; }
+  .dropdown a:hover { background:#f0f0f0; }
+</style>
 </head>
 <body>
 
-  <!-- Top-right menu -->
-  <div class="menu">
-    <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-ellipsis-v"></i></button>
-    <div class="dropdown" id="dropdownMenu">
-      <a href="https://t.me/YourUsername">Chat with Owner</a>
-      <a href="https://www.youtube.com/channel/YourChannelID">YouTube Channel</a>
-      <a href="https://www.instagram.com/YourUsername/">Instagram</a>
-    </div>
+<!-- Sign Up Form -->
+<div class="form-container" id="signupForm">
+  <h1>Sign Up</h1>
+  <input type="text" id="signupUsername" placeholder="Username (3-15 letters/numbers/_)" required>
+  <input type="email" id="signupEmail" placeholder="Email" required>
+  <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required>
+  <button onclick="signup()">Create Account</button>
+  <button class="toggle-form" onclick="showLogin()">Already have an account? Login</button>
+</div>
+
+<!-- Login Form -->
+<div class="form-container hidden" id="loginForm">
+  <h1>Login</h1>
+  <input type="text" id="loginUsername" placeholder="Username" required>
+  <input type="email" id="loginEmail" placeholder="Email" required>
+  <input type="password" id="loginPassword" placeholder="Password" required>
+  <button onclick="login()">Login</button>
+  <button class="toggle-form" onclick="showSignup()">Don't have an account? Sign Up</button>
+</div>
+
+<!-- Hamburger Menu (hidden until login) -->
+<div class="menu hidden" id="menu">
+  <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+  <div class="dropdown" id="dropdownMenu">
+    <a href="https://t.me/YourUsername">Chat with Owner</a>
+    <a href="https://www.youtube.com/channel/YourChannelID">YouTube Channel</a>
+    <a href="https://www.instagram.com/YourUsername/">Instagram</a>
   </div>
+</div>
 
-  <!-- Page Title -->
+<!-- Main Content -->
+<div class="card-container hidden" id="mainContent">
   <h1 class="page-title">Welcome to Our Channels</h1>
-
   <div class="card">
     <a href="https://t.me/YourBotUsername"><img src="logo.png" alt="Logo" class="logo"></a>
     <h2>Connect with Us</h2>
     <p>Tap below to join:</p>
     <a href="https://t.me/YourBotUsername" class="button telegram"><i class="fab fa-telegram-plane"></i> Join Telegram Bot</a>
     <a href="https://whatsapp.com/channel/YourChannelID" class="button whatsapp"><i class="fab fa-whatsapp"></i> Join WhatsApp Channel</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
-
-  <!-- Audio Player -->
-  <div style="margin-top: 30px;">
+  <div style="margin-top: 20px;">
     <audio id="backgroundAudio" controls autoplay loop>
       <source src="your-song.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
   </div>
+</div>
 
-  <script>
-    // Menu toggle for mobile
-    function toggleMenu() {
-      const dropdown = document.getElementById('dropdownMenu');
-      dropdown.classList.toggle('show');
-    }
+<script>
+// Initialize users
+let users = JSON.parse(localStorage.getItem('users')) || [];
 
-    // Close dropdown when clicking outside
-    window.onclick = function(event) {
-      if (!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn *')) {
-        const dropdown = document.getElementById('dropdownMenu');
-        dropdown.classList.remove('show');
-      }
-    }
+// Auto-login
+if(localStorage.getItem('loggedInUser')) showMainContent();
 
-    // Attempt autoplay on page load
-    window.addEventListener('load', () => {
-      const audio = document.getElementById('backgroundAudio');
-      audio.play().catch(() => console.log("Autoplay blocked, user interaction required"));
-    });
-  </script>
+// Username validation
+function isValidUsername(name) { return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
+function isValidPassword(pw) { return pw.length >=6; }
+
+function signup() {
+  const username = document.getElementById('signupUsername').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+
+  if(!username||!email||!password) { alert('Fill all fields'); return; }
+  if(!isValidUsername(username)) { alert('Invalid username'); return; }
+  if(!isValidPassword(password)) { alert('Password min 6 chars'); return; }
+  if(users.find(u=>u.username===username)) { alert('Username exists'); return; }
+
+  users.push({username,email,password});
+  localStorage.setItem('users',JSON.stringify(users));
+  alert('Account created! Please login.');
+  showLogin();
+}
+
+function login() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const user = users.find(u=>u.username===username&&u.email===email&&u.password===password);
+
+  if(user) {
+    localStorage.setItem('loggedInUser',username);
+    showMainContent();
+  } else alert('Invalid credentials.');
+}
+
+function logout() {
+  localStorage.removeItem('loggedInUser');
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('menu').classList.add('hidden');
+  showLogin();
+}
+
+function showMainContent() {
+  document.getElementById('signupForm').classList.add('hidden');
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('menu').classList.remove('hidden');
+}
+
+// Toggle forms
+function showLogin() { document.getElementById('signupForm').classList.add('hidden'); document.getElementById('loginForm').classList.remove('hidden'); }
+function showSignup() { document.getElementById('loginForm').classList.add('hidden'); document.getElementById('signupForm').classList.remove('hidden'); }
+
+// Hamburger menu toggle
+const menuBtn = document.getElementById('menuBtn');
+const dropdown = document.getElementById('dropdownMenu');
+menuBtn.addEventListener('click',()=>{ dropdown.classList.toggle('show'); menuBtn.classList.toggle('open'); });
+window.addEventListener('click',(event)=>{ 
+  if(!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn *')) {
+    dropdown.classList.remove('show'); menuBtn.classList.remove('open');
+  }
+});
+</script>
 
 </body>
 </html>
