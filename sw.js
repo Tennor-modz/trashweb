@@ -5,7 +5,7 @@ const urlsToCache = [
   '/manifest.json',
   '/sw.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
-  'https://files.catbox.moe/dc5opm.jpg'
+  'https://files.catbox.moe/7x996w.jpg'
 ];
 
 // Install SW and cache files
