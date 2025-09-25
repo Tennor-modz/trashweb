@@ -6,7 +6,7 @@
 <title>Join Our Channels</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-  /* Realistic sine-wave background */
+  /* Wave background */
   .wave-container {
     position: absolute;
     bottom: 0;
@@ -20,10 +20,11 @@
     position: absolute;
     width: 200%;
     height: 200px;
-    background: rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.2); /* Default for gradient background */
     border-radius: 43%;
     opacity: 0.3;
     animation: waveMove 8s linear infinite;
+    transition: background 0.5s, opacity 0.5s;
   }
   .wave.wave2 {
     bottom: 20px;
@@ -37,21 +38,35 @@
   }
   body > *:not(.wave-container) { position: relative; z-index: 1; }
 
+  /* Brighter waves after login */
+  body.logged-in .wave {
+    background: rgba(255,255,255,0.6); /* Brighter on black */
+    opacity: 0.5;
+  }
+  body.logged-in .wave.wave2 {
+    opacity: 0.3;
+  }
+
   body { font-family: Arial,sans-serif; margin:0; padding:0; text-align:center;
          background: linear-gradient(135deg, #1E90FF 0%, #32CD32 100%);
-         min-height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; position: relative;}
+         min-height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; position: relative;
+         transition: background 0.5s ease; }
+  body.logged-in { background: #000; } /* Black background after login */
+
   .hidden { display:none; }
   .form-container, .card-container { background:#1E90FF; padding:40px 30px; border-radius:16px;
       box-shadow:0 10px 25px rgba(0,0,0,0.15); color:white; max-width:400px; width:100%; margin:10px;
-      animation: fadeIn 0.8s ease-in-out; }
+      animation: fadeIn 0.8s ease-in-out; transition: background 0.3s; }
+  body.logged-in .card-container, body.logged-in .card { background:#111; }
+
   h1 { color:red; margin-bottom:20px; text-shadow:2px 2px 6px rgba(0,0,0,0.3); }
   input { width:90%; padding:12px; margin:10px 0; border-radius:8px; border:none; }
   button { width:95%; padding:12px; margin:10px 0; border-radius:8px; border:none; background-color:#32CD32;
            color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
   button:hover { background-color:#28a428; }
   .toggle-form { background:none; color:yellow; border:none; cursor:pointer; margin-top:5px; text-decoration:underline; }
-  .card { background:#1E90FF; border-radius:16px; padding:40px 30px; max-width:450px; width:100%;
-         box-shadow:0 10px 25px rgba(0,0,0,0.15); text-align:center; color:white; }
+  .card { border-radius:16px; padding:40px 30px; max-width:450px; width:100%;
+         box-shadow:0 10px 25px rgba(0,0,0,0.15); text-align:center; color:white; transition: background 0.3s; }
   .logo { width:100px; height:100px; border-radius:50%; margin-bottom:20px; }
   .button { display:flex; justify-content:center; align-items:center; gap:10px; width:100%; margin:12px 0; 
            padding:15px; font-size:18px; font-weight:bold; color:white; text-decoration:none; border-radius:12px;
@@ -74,10 +89,10 @@
     position:absolute;
     top:55px;
     right:0;
-    background:#000;                  /* Black background */
+    background:#000;
     color:#fff;
     border-radius:8px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.05); /* Glow */
+    box-shadow:0 8px 20px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.05);
     overflow:hidden;
     min-width:180px;
     max-height:0;
@@ -152,9 +167,11 @@
 <script>
 // Initialize users
 let users = JSON.parse(localStorage.getItem('users')) || [];
-if(localStorage.getItem('loggedInUser')) showMainContent();
+if(localStorage.getItem('loggedInUser')) { document.body.classList.add('logged-in'); showMainContent(); }
+
 function isValidUsername(name) { return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
 function isValidPassword(pw) { return pw.length >=6; }
+
 function signup() {
   const username = document.getElementById('signupUsername').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
@@ -168,29 +185,38 @@ function signup() {
   alert('Account created! Please login.');
   showLogin();
 }
+
 function login() {
   const username = document.getElementById('loginUsername').value.trim();
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const user = users.find(u=>u.username===username&&u.email===email&&u.password===password);
-  if(user){ localStorage.setItem('loggedInUser',username); showMainContent(); }
-  else alert('Invalid credentials.');
+  if(user){
+    localStorage.setItem('loggedInUser',username);
+    document.body.classList.add('logged-in');
+    showMainContent();
+  } else alert('Invalid credentials.');
 }
+
 function logout() {
   localStorage.removeItem('loggedInUser');
+  document.body.classList.remove('logged-in');
   document.getElementById('mainContent').classList.add('hidden');
   document.getElementById('menu').classList.add('hidden');
   showLogin();
 }
+
 function showMainContent() {
   document.getElementById('signupForm').classList.add('hidden');
   document.getElementById('loginForm').classList.add('hidden');
   document.getElementById('mainContent').classList.remove('hidden');
   document.getElementById('menu').classList.remove('hidden');
 }
+
 function showLogin() { document.getElementById('signupForm').classList.add('hidden'); document.getElementById('loginForm').classList.remove('hidden'); }
 function showSignup() { document.getElementById('loginForm').classList.add('hidden'); document.getElementById('signupForm').classList.remove('hidden'); }
 
+// Hamburger menu toggle
 const menuBtn = document.getElementById('menuBtn');
 const dropdown = document.getElementById('dropdownMenu');
 menuBtn.addEventListener('click',()=>{ dropdown.classList.toggle('show'); menuBtn.classList.toggle('open'); });
