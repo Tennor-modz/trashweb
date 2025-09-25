@@ -1,296 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Trashcore Chat</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:black; color:white; text-align:center; }
-    .card { background:#111; padding:20px; margin:20px auto; border-radius:10px; width:80%; max-width:500px; }
-    input, button { padding:8px; margin:5px; border-radius:5px; border:none; }
-    input { width:70%; }
-    button { background:#444; color:white; cursor:pointer; }
-    button:hover { background:#666; }
-    .hidden { display:none; }
-    .chat-messages { background:#222; padding:10px; height:200px; overflow-y:auto; margin:10px 0; text-align:left; }
-    #onlineList li, #groupList li { cursor:pointer; padding:4px; }
-    #onlineList li:hover, #groupList li:hover { background:#333; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trashcore Web</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  /* Wave background */
+  .wave-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .wave {
+    position: absolute;
+    width: 200%;
+    height: 200px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 43%;
+    opacity: 0.3;
+    animation: waveMove 8s linear infinite;
+    transition: background 0.5s, opacity 0.5s;
+  }
+  .wave.wave2 {
+    bottom: 20px;
+    opacity: 0.15;
+    animation-duration: 12s;
+  }
+  @keyframes waveMove {
+    0% { transform: translateX(0) translateY(0) rotate(0deg); }
+    50% { transform: translateX(50%) translateY(10px) rotate(3deg); }
+    100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  }
+  body > *:not(.wave-container) { position: relative; z-index: 1; }
+
+  /* Brighter waves after login */
+  body.logged-in .wave {
+    background: rgba(255,255,255,0.6);
+    opacity: 0.5;
+  }
+  body.logged-in .wave.wave2 {
+    opacity: 0.3;
+  }
+
+  body { font-family: Arial,sans-serif; margin:0; padding:0; text-align:center;
+         background: linear-gradient(135deg, #1E90FF 0%, #32CD32 100%);
+         min-height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; position: relative;
+         transition: background 0.5s ease; }
+  body.logged-in { background: #000; }
+
+  .hidden { display:none; }
+  .form-container, .card-container { background:#1E90FF; padding:40px 30px; border-radius:16px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.15); color:white; max-width:400px; width:100%; margin:10px;
+      animation: fadeIn 0.8s ease-in-out; transition: background 0.3s; }
+  body.logged-in .card-container, body.logged-in .card { background:#111; }
+
+  h1 { color:red; margin-bottom:20px; text-shadow:2px 2px 6px rgba(0,0,0,0.3); }
+  input { width:90%; padding:12px; margin:10px 0; border-radius:8px; border:none; }
+  button { width:95%; padding:12px; margin:10px 0; border-radius:8px; border:none; background-color:#32CD32;
+           color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
+  button:hover { background-color:#28a428; }
+  .toggle-form { background:none; color:yellow; border:none; cursor:pointer; margin-top:5px; text-decoration:underline; }
+  .card { border-radius:16px; padding:40px 30px; max-width:450px; width:100%;
+         box-shadow:0 10px 25px rgba(0,0,0,0.15); text-align:center; color:white; transition: background 0.3s; }
+  .logo { width:100px; height:100px; border-radius:50%; margin-bottom:20px; }
+  .button { display:flex; justify-content:center; align-items:center; gap:10px; width:100%; margin:12px 0; 
+           padding:15px; font-size:18px; font-weight:bold; color:white; text-decoration:none; border-radius:12px;
+           background-size:200% 200%; cursor:pointer; }
+  .telegram { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
+  .whatsapp { background: linear-gradient(90deg, #32CD32, #00FF7F); }
+  .logout-btn { background-color:#FF4500; margin-top:15px; }
+  .logout-btn:hover { background-color:#e03e00; }
+  @keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+
+  /* Hamburger menu */
+  .menu { position:absolute; top:20px; right:20px; display:inline-block; }
+  .menu-btn {
+    background: rgba(255,255,255,0.8);
+    border:none;
+    padding:10px 15px;
+    border-radius:50px;
+    font-size:16px;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:5px;
+    transition:0.3s;
+  }
+  .menu-btn:hover { background: rgba(255,255,255,1); }
+  .menu-btn i { transition: transform 0.3s; }
+  .menu-btn.open i { transform: rotate(90deg); }
+
+  /* Dropdown */
+  .dropdown {
+    position:absolute;
+    top:55px;
+    right:0;
+    background:#000;
+    color:#fff;
+    border-radius:8px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.05);
+    overflow:hidden;
+    min-width:180px;
+    max-height:0;
+    opacity:0;
+    transform:translateY(-10px);
+    transition:max-height 0.3s ease-out, opacity 0.3s ease-out, transform 0.3s ease-out;
+    z-index:10;
+  }
+  .dropdown.show { max-height:500px; opacity:1; transform:translateY(0); }
+  .dropdown a { display:block; padding:12px 15px; text-decoration:none; color:#fff; font-weight:bold; transition:background 0.3s; }
+  .dropdown a:hover { background:#222; }
+
+  /* Copyright */
+  .copyright {
+    text-align:center;
+    margin:20px 0;
+    color:white;
+    font-size:14px;
+    z-index:1;
+    position: relative;
+  }
+</style>
 </head>
 <body>
-  <h1>🔥 Trashcore Chat 🔥</h1>
 
-  <!-- Signup -->
-  <div id="signupForm" class="card">
-    <h2>Create Account</h2>
-    <input type="text" id="signupUsername" placeholder="Username"><br>
-    <input type="password" id="signupPassword" placeholder="Password"><br>
-    <button onclick="signup()">Sign Up</button>
-    <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+<!-- Wave Background -->
+<div class="wave-container">
+  <div class="wave wave1"></div>
+  <div class="wave wave2"></div>
+</div>
+
+<!-- Sign Up Form -->
+<div class="form-container" id="signupForm">
+  <h1>Sign Up</h1>
+  <input type="text" id="signupUsername" placeholder="Username (3-15 letters/numbers/_)" required>
+  <input type="email" id="signupEmail" placeholder="Email" required>
+  <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required>
+  <button onclick="signup()">Create Account</button>
+  <button class="toggle-form" onclick="showLogin()">Already have an account? Login</button>
+</div>
+
+<!-- Login Form -->
+<div class="form-container hidden" id="loginForm">
+  <h1>Login</h1>
+  <input type="text" id="loginUsername" placeholder="Username" required>
+  <input type="email" id="loginEmail" placeholder="Email" required>
+  <input type="password" id="loginPassword" placeholder="Password" required>
+  <button onclick="login()">Login</button>
+  <button class="toggle-form" onclick="showSignup()">Don't have an account? Sign Up</button>
+</div>
+
+<!-- Hamburger Menu -->
+<div class="menu hidden" id="menu">
+  <button class="menu-btn" id="menuBtn">
+    <i class="fas fa-bars"></i> <span>Menu</span>
+  </button>
+  <div class="dropdown" id="dropdownMenu">
+    <a href="https://t.me/trashcoredev">Chat with Owner</a>
+    <a href="https://youtube.com/@giddytennor?si=H-fa3xk3pYlTE0os">YouTube Channel</a>
+    <a href="https://www.instagram.com/putrazyy_xd_?igsh=YzZ0NDRoaXFxM2Zk">Instagram</a>
   </div>
+</div>
 
-  <!-- Login -->
-  <div id="loginForm" class="card hidden">
-    <h2>Login</h2>
-    <input type="text" id="loginUsername" placeholder="Username"><br>
-    <input type="password" id="loginPassword" placeholder="Password"><br>
-    <button onclick="login()">Login</button>
-    <p>No account? <a href="#" onclick="showSignup()">Sign Up</a></p>
+<!-- Main Content -->
+<div class="card-container hidden" id="mainContent">
+  <h1 class="page-title">TRASHCORE SITE</h1>
+  <div class="card">
+    <a href="https://t.me/YourBotUsername"><img src="https://files.catbox.moe/dc5opm.jpg" alt="Logo" class="logo"></a>
+    <h2>MY SERVICES</h2>
+    <p>Select below:</p>
+    <a href="https://t.me/TrashcoreBot" class="button telegram"><i class="fab fa-telegram-plane"></i> Server 1</a>
+<a href="http://t.me/Traschoreultra_bot" class="button telegram"><i class="fab fa-telegram-plane"></i> Server 2</a>
+<a href="https://t.me/theaccidentallygeniuses" class="button telegram"><i class="fab fa-telegram-plane"></i> Join Telegram group</a>
+    <a href="https://whatsapp.com/channel/0029VafrbsKG8l5EFBDDCy41" class="button whatsapp"><i class="fab fa-whatsapp"></i> Join WhatsApp Channel</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
-
-  <!-- Main Content -->
-  <div id="mainContent" class="hidden">
-    <h2>Welcome, <span id="currentUser"></span>!</h2>
-    <button onclick="logout()">Logout</button>
-
-    <!-- Public Chat -->
-    <div id="publicChat" class="card">
-      <h2>Public Chat</h2>
-      <div class="chat-messages" id="publicMessages"></div>
-      <input type="text" id="publicInput" placeholder="Type a message">
-      <button onclick="sendPublicMessage()">Send</button>
-    </div>
-
-    <!-- Online Users -->
-    <div id="onlineUsers" class="card">
-      <h2>Online Users</h2>
-      <input type="text" id="searchUser" placeholder="Search users..." onkeyup="filterUsers()"><br>
-      <ul id="onlineList" style="list-style:none; padding:0;"></ul>
-    </div>
-
-    <!-- Private Chat -->
-    <div id="privateChat" class="card hidden">
-      <h2 id="privateChatTitle">Private Chat</h2>
-      <div class="chat-messages" id="privateMessages"></div>
-      <input type="text" id="privateInput" placeholder="Type a private message">
-      <button onclick="sendPrivateMessage()">Send</button>
-    </div>
-
-    <!-- Group Chat -->
-    <div id="groupChat" class="card">
-      <h2>Group Chats</h2>
-      <div>
-        <input type="text" id="newGroupName" placeholder="New group name">
-        <button onclick="createGroup()">Create</button>
-      </div>
-      <input type="text" id="searchGroup" placeholder="Search groups..." onkeyup="filterGroups()"><br>
-      <ul id="groupList" style="list-style:none; padding:0; margin:10px 0; text-align:left;"></ul>
-    </div>
-
-    <!-- Active Group -->
-    <div id="activeGroupChat" class="card hidden">
-      <h2 id="activeGroupTitle">Group Chat</h2>
-      <div class="chat-messages" id="groupMessages"></div>
-      <input type="text" id="groupInput" placeholder="Type a message">
-      <button onclick="sendGroupMessage()">Send</button>
-    </div>
+  <div style="margin-top: 20px;">
+    <audio id="backgroundAudio" controls autoplay loop>
+      <source src="https://files.catbox.moe/85xho5.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
   </div>
+</div>
 
-  <script>
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    let onlineUsers = JSON.parse(localStorage.getItem("onlineUsers")) || [];
-    let publicMessages = JSON.parse(localStorage.getItem("publicMessages")) || [];
-    let privateChats = JSON.parse(localStorage.getItem("privateChats")) || {};
-    let groups = JSON.parse(localStorage.getItem("groups")) || [];
-    let groupChats = JSON.parse(localStorage.getItem("groupChats")) || {};
-    let currentDM = null;
-    let currentGroup = null;
+<!-- Copyright -->
+<div class="copyright">
+  ©️ 2023-202?? by Trashcore Devs
+</div>
 
-    // Signup & Login
-    function signup() {
-      const username = document.getElementById("signupUsername").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      if (!username || !password) return alert("Fill all fields");
-      if (users.find(u => u.username === username)) return alert("User exists");
-      users.push({ username, password });
-      localStorage.setItem("users", JSON.stringify(users));
-      alert("Account created! Please login.");
-      showLogin();
-    }
-    function login() {
-      const username = document.getElementById("loginUsername").value.trim();
-      const password = document.getElementById("loginPassword").value;
-      const user = users.find(u => u.username === username && u.password === password);
-      if (!user) return alert("Invalid login");
-      localStorage.setItem("loggedInUser", username);
-      if (!onlineUsers.includes(username)) {
-        onlineUsers.push(username);
-        localStorage.setItem("onlineUsers", JSON.stringify(onlineUsers));
-      }
-      document.getElementById("currentUser").textContent = username;
-      showMainContent();
-    }
-    function logout() {
-      const username = localStorage.getItem("loggedInUser");
-      onlineUsers = onlineUsers.filter(u => u !== username);
-      localStorage.setItem("onlineUsers", JSON.stringify(onlineUsers));
-      localStorage.removeItem("loggedInUser");
-      location.reload();
-    }
+<script>
+// Initialize users
+let users = JSON.parse(localStorage.getItem('users')) || [];
+if(localStorage.getItem('loggedInUser')) { 
+  document.body.classList.add('logged-in'); 
+  showMainContent(); 
+}
 
-    function showSignup() { 
-      document.getElementById("signupForm").classList.remove("hidden"); 
-      document.getElementById("loginForm").classList.add("hidden"); 
-    }
-    function showLogin() { 
-      document.getElementById("loginForm").classList.remove("hidden"); 
-      document.getElementById("signupForm").classList.add("hidden"); 
-    }
+function isValidUsername(name) { return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
+function isValidPassword(pw) { return pw.length >=6; }
 
-    // Main Content
-    function showMainContent() {
-      document.getElementById("signupForm").classList.add("hidden");
-      document.getElementById("loginForm").classList.add("hidden");
-      document.getElementById("mainContent").classList.remove("hidden");
-      showPublicMessages();
-      showOnlineUsers();
-      showGroups();
-    }
+function signup() {
+  const username = document.getElementById('signupUsername').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  if(!username||!email||!password){ alert('Fill all fields'); return; }
+  if(!isValidUsername(username)){ alert('Invalid username'); return; }
+  if(!isValidPassword(password)){ alert('Password min 6 chars'); return; }
+  if(users.find(u=>u.username===username)){ alert('Username exists'); return; }
+  users.push({username,email,password});
+  localStorage.setItem('users',JSON.stringify(users));
+  alert('Account created! Please login.');
+  showLogin();
+}
 
-    // Public Chat
-    function sendPublicMessage() {
-      const text = document.getElementById("publicInput").value.trim();
-      if (!text) return;
-      const from = localStorage.getItem("loggedInUser");
-      publicMessages.push({ from, text, time: new Date().toLocaleTimeString() });
-      localStorage.setItem("publicMessages", JSON.stringify(publicMessages));
-      document.getElementById("publicInput").value = "";
-      showPublicMessages();
-    }
-    function showPublicMessages() {
-      const box = document.getElementById("publicMessages");
-      box.innerHTML = "";
-      publicMessages.forEach(m => {
-        const p = document.createElement("p");
-        p.textContent = `[${m.time}] ${m.from}: ${m.text}`;
-        box.appendChild(p);
-      });
-      box.scrollTop = box.scrollHeight;
-    }
+function login() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const user = users.find(u=>u.username===username&&u.email===email&&u.password===password);
+  if(user){
+    localStorage.setItem('loggedInUser',username);
+    document.body.classList.add('logged-in');
+    showMainContent();
+  } else alert('Invalid credentials.');
+}
 
-    // Online Users with search
-    function filterUsers() {
-      const query = document.getElementById("searchUser").value.toLowerCase();
-      const list = document.getElementById("onlineList");
-      list.innerHTML = "";
-      const me = localStorage.getItem("loggedInUser");
-      onlineUsers
-        .filter(u => u !== me && u.toLowerCase().includes(query))
-        .forEach(u => {
-          const li = document.createElement("li");
-          li.textContent = "🟢 " + u;
-          li.onclick = () => openPrivateChat(u);
-          list.appendChild(li);
-        });
-    }
-    function showOnlineUsers() { filterUsers(); }
+function logout() {
+  localStorage.removeItem('loggedInUser');
+  document.body.classList.remove('logged-in');
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('menu').classList.add('hidden');
+  showLogin();
+}
 
-    // Private Chat
-    function openPrivateChat(user) {
-      currentDM = user;
-      document.getElementById("privateChat").classList.remove("hidden");
-      document.getElementById("privateChatTitle").textContent = "Chat with " + user;
-      showPrivateMessages();
-    }
-    function sendPrivateMessage() {
-      if (!currentDM) return;
-      const text = document.getElementById("privateInput").value.trim();
-      if (!text) return;
-      const from = localStorage.getItem("loggedInUser");
-      const key = getChatKey(from, currentDM);
-      if (!privateChats[key]) privateChats[key] = [];
-      privateChats[key].push({ from, text, time: new Date().toLocaleTimeString() });
-      localStorage.setItem("privateChats", JSON.stringify(privateChats));
-      document.getElementById("privateInput").value = "";
-      showPrivateMessages();
-    }
-    function showPrivateMessages() {
-      const box = document.getElementById("privateMessages");
-      if (!currentDM) return;
-      const me = localStorage.getItem("loggedInUser");
-      const key = getChatKey(me, currentDM);
-      const msgs = privateChats[key] || [];
-      box.innerHTML = "";
-      msgs.forEach(m => {
-        const p = document.createElement("p");
-        p.textContent = `[${m.time}] ${m.from}: ${m.text}`;
-        box.appendChild(p);
-      });
-      box.scrollTop = box.scrollHeight;
-    }
-    function getChatKey(u1, u2) { return [u1, u2].sort().join("_"); }
+function showMainContent() {
+  document.getElementById('signupForm').classList.add('hidden');
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('menu').classList.remove('hidden');
+}
 
-    // Groups with search
-    function createGroup() {
-      const name = document.getElementById("newGroupName").value.trim();
-      if (!name) return alert("Enter a group name");
-      if (groups.includes(name)) return alert("Group exists");
-      groups.push(name);
-      localStorage.setItem("groups", JSON.stringify(groups));
-      document.getElementById("newGroupName").value = "";
-      showGroups();
-    }
-    function filterGroups() {
-      const query = document.getElementById("searchGroup").value.toLowerCase();
-      const list = document.getElementById("groupList");
-      list.innerHTML = "";
-      groups
-        .filter(g => g.toLowerCase().includes(query))
-        .forEach(g => {
-          const li = document.createElement("li");
-          li.textContent = "👥 " + g;
-          li.onclick = () => openGroupChat(g);
-          list.appendChild(li);
-        });
-    }
-    function showGroups() { filterGroups(); }
-    function openGroupChat(group) {
-      currentGroup = group;
-      document.getElementById("activeGroupChat").classList.remove("hidden");
-      document.getElementById("activeGroupTitle").textContent = "Group: " + group;
-      showGroupMessages();
-    }
-    function sendGroupMessage() {
-      if (!currentGroup) return;
-      const text = document.getElementById("groupInput").value.trim();
-      if (!text) return;
-      const from = localStorage.getItem("loggedInUser");
-      if (!groupChats[currentGroup]) groupChats[currentGroup] = [];
-      groupChats[currentGroup].push({ from, text, time: new Date().toLocaleTimeString() });
-      localStorage.setItem("groupChats", JSON.stringify(groupChats));
-      document.getElementById("groupInput").value = "";
-      showGroupMessages();
-    }
-    function showGroupMessages() {
-      const box = document.getElementById("groupMessages");
-      if (!currentGroup) return;
-      const msgs = groupChats[currentGroup] || [];
-      box.innerHTML = "";
-      msgs.forEach(m => {
-        const p = document.createElement("p");
-        p.textContent = `[${m.time}] ${m.from}: ${m.text}`;
-        box.appendChild(p);
-      });
-      box.scrollTop = box.scrollHeight;
-    }
+function showLogin() { 
+  document.getElementById('signupForm').classList.add('hidden'); 
+  document.getElementById('loginForm').classList.remove('hidden'); 
+}
 
-    // Sync across tabs
-    window.addEventListener("storage", e => {
-      if (e.key === "publicMessages") { publicMessages = JSON.parse(e.newValue) || []; showPublicMessages(); }
-      if (e.key === "onlineUsers") { onlineUsers = JSON.parse(e.newValue) || []; showOnlineUsers(); }
-      if (e.key === "privateChats") { privateChats = JSON.parse(e.newValue) || {}; if (currentDM) showPrivateMessages(); }
-      if (e.key === "groups") { groups = JSON.parse(e.newValue) || []; showGroups(); }
-      if (e.key === "groupChats") { groupChats = JSON.parse(e.newValue) || {}; if (currentGroup) showGroupMessages(); }
-    });
+function showSignup() { 
+  document.getElementById('loginForm').classList.add('hidden'); 
+  document.getElementById('signupForm').classList.remove('hidden'); 
+}
 
-    // Auto-login restore
-    if (localStorage.getItem("loggedInUser")) {
-      document.getElementById("currentUser").textContent = localStorage.getItem("loggedInUser");
-      if (!onlineUsers.includes(localStorage.getItem("loggedInUser"))) {
-        onlineUsers.push(localStorage.getItem("loggedInUser"));
-        localStorage.setItem("onlineUsers", JSON.stringify(onlineUsers));
-      }
-      showMainContent();
-    }
-  </script>
+// Hamburger menu toggle
+const menuBtn = document.getElementById('menuBtn');
+const dropdown = document.getElementById('dropdownMenu');
+
+menuBtn.addEventListener('click', () => { 
+  dropdown.classList.toggle('show'); 
+  menuBtn.classList.toggle('open'); 
+});
+
+// Close dropdown if clicked outside
+window.addEventListener('click', (event) => { 
+  if (!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn *')) {
+    dropdown.classList.remove('show'); 
+    menuBtn.classList.remove('open');
+  }
+});
+</script>
+
 </body>
 </html>
