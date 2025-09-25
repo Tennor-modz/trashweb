@@ -90,6 +90,8 @@
 <!-- Main Content -->
 <div class="card-container hidden" id="mainContent">
   <h1 class="page-title">TRASHCORE SITE</h1>
+
+  <!-- Services Card -->
   <div class="card">
     <a href="https://t.me/YourBotUsername"><img src="https://files.catbox.moe/7x996w.jpg" alt="Logo" class="logo"></a>
     <h2>MY SERVICES</h2>
@@ -109,6 +111,13 @@
     <div id="songResults" style="margin-top:10px; text-align:left;"></div>
   </div>
 
+  <!-- Google Search -->
+  <div class="card" id="googleCard">
+    <h2>Google Search</h2>
+    <input type="text" id="googleQuery" placeholder="Type anything to search on Google">
+    <button onclick="searchGoogle()">Search</button>
+  </div>
+
   <!-- Public Chat -->
   <div class="card" id="chatCard">
     <h2>Public Chat</h2>
@@ -120,7 +129,7 @@
 
 <!-- Install Banner -->
 <div id="installBanner">
-  <span>Install Trashcore on your device for a better experience!</span>
+<span>Install Trashcore on your device for a better experience!</span>
   <button id="installBtn">Install</button>
   <button id="dismissInstall">No Thanks</button>
 </div>
@@ -133,15 +142,18 @@
   // --- Auth & UI ---
   let users = JSON.parse(localStorage.getItem('users')) || [];
   let publicMessages = JSON.parse(localStorage.getItem('publicMessages')) || [];
-  if(localStorage.getItem('loggedInUser')) { document.body.classList.add('logged-in'); showMainContent(); }
+  if(localStorage.getItem('loggedInUser')) { 
+    document.body.classList.add('logged-in'); 
+    showMainContent(); 
+  }
 
   function isValidUsername(name){ return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
   function isValidPassword(pw){ return pw.length >= 6; }
 
   function signup(){
-    const username=document.getElementById('signupUsername').value.trim();
-    const email=document.getElementById('signupEmail').value.trim();
-    const password=document.getElementById('signupPassword').value;
+    const username = document.getElementById('signupUsername').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
     if(!username||!email||!password){ alert('Fill all fields'); return; }
     if(!isValidUsername(username)){ alert('Invalid username'); return; }
     if(!isValidPassword(password)){ alert('Password min6 chars'); return; }
@@ -264,6 +276,14 @@
       console.error(err);
       resultsDiv.innerHTML = '<p>Error fetching videos.</p>';
     }
+  }
+
+  // --- Google Search ---
+  function searchGoogle(){
+    const query = document.getElementById('googleQuery').value.trim();
+    if(!query){ alert('Enter a search query'); return; }
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(url, '_blank');
   }
 
   // --- PWA Install Banner ---
