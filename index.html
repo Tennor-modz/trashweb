@@ -1,208 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trashcore Multi-User Chat</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-  body { font-family: Arial,sans-serif; margin:0; padding:0; text-align:center;
-         background: linear-gradient(135deg, #1E90FF 0%, #32CD32 100%);
-         min-height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; position: relative;
-         transition: background 0.5s ease; }
-  body.logged-in { background:#000; color:white; }
-
-  .hidden { display:none; }
-  .form-container, .card-container, .card { background:#1E90FF; padding:30px; border-radius:16px;
-      box-shadow:0 10px 25px rgba(0,0,0,0.15); color:white; max-width:450px; width:100%; margin:10px; }
-
-  body.logged-in .card-container, body.logged-in .card { background:#111; }
-
-  h1 { margin-bottom:20px; }
-  input, select { width:90%; padding:10px; margin:8px 0; border-radius:6px; border:none; }
-  button { width:95%; padding:12px; margin:8px 0; border-radius:8px; border:none; background-color:#32CD32;
-           color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
-  button:hover { background-color:#28a428; }
-  .toggle-form { background:none; color:yellow; border:none; cursor:pointer; text-decoration:underline; margin-top:5px; }
-
-  /* Chat Room */
-  #chatMessages { height:250px; overflow-y:auto; background:#222; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
-  .chatMessage { padding:5px 10px; margin-bottom:6px; border-radius:8px; max-width:80%; display:inline-block; word-wrap:break-word; }
-  .chatMessage.sent { background:#32CD32; color:#000; text-align:right; float:right; clear:both; }
-  .chatMessage.received { background:#FF4500; color:#fff; text-align:left; float:left; clear:both; }
-  .timestamp { font-size:10px; color:#ccc; margin-left:5px; }
-
-  .logout-btn { background-color:#FF4500; margin-top:10px; }
-  .logout-btn:hover { background-color:#e03e00; }
-
-  .copyright { margin:20px 0; font-size:14px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Trashcore Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:black; color:white; text-align:center; }
+    .card { background:#111; padding:20px; margin:20px auto; border-radius:10px; width:80%; max-width:500px; }
+    input, button { padding:8px; margin:5px; border-radius:5px; border:none; }
+    input { width:70%; }
+    button { background:#444; color:white; cursor:pointer; }
+    button:hover { background:#666; }
+    .hidden { display:none; }
+    .chat-messages { background:#222; padding:10px; height:200px; overflow-y:auto; margin:10px 0; text-align:left; }
+    #onlineList li, #groupList li { cursor:pointer; padding:4px; }
+    #onlineList li:hover, #groupList li:hover { background:#333; }
+  </style>
 </head>
 <body>
+  <h1>🔥 Trashcore Chat 🔥</h1>
 
-<!-- Sign Up Form -->
-<div class="form-container" id="signupForm">
-  <h1>Sign Up</h1>
-  <input type="text" id="signupUsername" placeholder="Username (3-15 letters/numbers/_)" required>
-  <input type="email" id="signupEmail" placeholder="Email" required>
-  <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required>
-  <button onclick="signup()">Create Account</button>
-  <button class="toggle-form" onclick="showLogin()">Already have an account? Login</button>
-</div>
-
-<!-- Login Form -->
-<div class="form-container hidden" id="loginForm">
-  <h1>Login</h1>
-  <input type="text" id="loginUsername" placeholder="Username" required>
-  <input type="email" id="loginEmail" placeholder="Email" required>
-  <input type="password" id="loginPassword" placeholder="Password" required>
-  <button onclick="login()">Login</button>
-  <button class="toggle-form" onclick="showSignup()">Don't have an account? Sign Up</button>
-</div>
-
-<!-- Main Content -->
-<div class="card-container hidden" id="mainContent">
-  <h1>TRASHCORE SERVICES</h1>
-  <div class="card">
-    <h2>Multi-User Private Chat</h2>
-    <select id="chatRecipient" onchange="showChatMessages()">
-      <option value="">Select a user...</option>
-    </select>
-    <div id="chatMessages"></div>
-    <input type="text" id="chatInput" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+  <!-- Signup -->
+  <div id="signupForm" class="card">
+    <h2>Create Account</h2>
+    <input type="text" id="signupUsername" placeholder="Username"><br>
+    <input type="password" id="signupPassword" placeholder="Password"><br>
+    <button onclick="signup()">Sign Up</button>
+    <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
   </div>
-</div>
 
-<div class="copyright">
-  ©️ 2023-202?? by Trashcore Devs
-</div>
+  <!-- Login -->
+  <div id="loginForm" class="card hidden">
+    <h2>Login</h2>
+    <input type="text" id="loginUsername" placeholder="Username"><br>
+    <input type="password" id="loginPassword" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p>No account? <a href="#" onclick="showSignup()">Sign Up</a></p>
+  </div>
 
-<script>
-// Users & Messages
-let users = JSON.parse(localStorage.getItem('users')) || [];
-let messages = JSON.parse(localStorage.getItem('messages')) || [];
+  <!-- Main Content -->
+  <div id="mainContent" class="hidden">
+    <h2>Welcome, <span id="currentUser"></span>!</h2>
+    <button onclick="logout()">Logout</button>
 
-// Check login
-if(localStorage.getItem('loggedInUser')) {
-  document.body.classList.add('logged-in'); 
-  showMainContent(); 
-  populateRecipients();
-  showChatMessages();
-}
+    <!-- Public Chat -->
+    <div id="publicChat" class="card">
+      <h2>Public Chat</h2>
+      <div class="chat-messages" id="publicMessages"></div>
+      <input type="text" id="publicInput" placeholder="Type a message">
+      <button onclick="sendPublicMessage()">Send</button>
+    </div>
 
-// Validation
-function isValidUsername(name){ return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
-function isValidPassword(pw){ return pw.length >=6; }
+    <!-- Online Users -->
+    <div id="onlineUsers" class="card">
+      <h2>Online Users</h2>
+      <ul id="onlineList" style="list-style:none; padding:0;"></ul>
+    </div>
 
-// Signup/Login
-function signup() {
-  const username = document.getElementById('signupUsername').value.trim();
-  const email = document.getElementById('signupEmail').value.trim();
-  const password = document.getElementById('signupPassword').value;
-  if(!username||!email||!password){ alert('Fill all fields'); return; }
-  if(!isValidUsername(username)){ alert('Invalid username'); return; }
-  if(!isValidPassword(password)){ alert('Password min 6 chars'); return; }
-  if(users.find(u=>u.username===username)){ alert('Username exists'); return; }
-  users.push({username,email,password});
-  localStorage.setItem('users',JSON.stringify(users));
-  alert('Account created! Please login.');
-  showLogin();
-}
+    <!-- Private Chat -->
+    <div id="privateChat" class="card hidden">
+      <h2 id="privateChatTitle">Private Chat</h2>
+      <div class="chat-messages" id="privateMessages"></div>
+      <input type="text" id="privateInput" placeholder="Type a private message">
+      <button onclick="sendPrivateMessage()">Send</button>
+    </div>
 
-function login() {
-  const username = document.getElementById('loginUsername').value.trim();
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const user = users.find(u=>u.username===username && u.email===email && u.password===password);
-  if(user){
-    localStorage.setItem('loggedInUser',username);
-    document.body.classList.add('logged-in');
-    showMainContent();
-    populateRecipients();
-    showChatMessages();
-  } else alert('Invalid credentials.');
-}
+    <!-- Group Chat -->
+    <div id="groupChat" class="card">
+      <h2>Group Chats</h2>
+      <div>
+        <input type="text" id="newGroupName" placeholder="New group name">
+        <button onclick="createGroup()">Create</button>
+      </div>
+      <ul id="groupList" style="list-style:none; padding:0; margin:10px 0; text-align:left;"></ul>
+    </div>
 
-function logout() {
-  localStorage.removeItem('loggedInUser');
-  document.body.classList.remove('logged-in');
-  document.getElementById('mainContent').classList.add('hidden');
-  showLogin();
-}
+    <!-- Active Group -->
+    <div id="activeGroupChat" class="card hidden">
+      <h2 id="activeGroupTitle">Group Chat</h2>
+      <div class="chat-messages" id="groupMessages"></div>
+      <input type="text" id="groupInput" placeholder="Type a message">
+      <button onclick="sendGroupMessage()">Send</button>
+    </div>
+  </div>
 
-function showMainContent() {
-  document.getElementById('signupForm').classList.add('hidden');
-  document.getElementById('loginForm').classList.add('hidden');
-  document.getElementById('mainContent').classList.remove('hidden');
-}
+  <script>
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    let onlineUsers = JSON.parse(localStorage.getItem("onlineUsers")) || [];
+    let publicMessages = JSON.parse(localStorage.getItem("publicMessages")) || [];
+    let privateChats = JSON.parse(localStorage.getItem("privateChats")) || {};
+    let groups = JSON.parse(localStorage.getItem("groups")) || [];
+    let groupChats = JSON.parse(localStorage.getItem("groupChats")) || {};
+    let currentDM = null;
+    let currentGroup = null;
 
-function showLogin() { 
-  document.getElementById('signupForm').classList.add('hidden'); 
-  document.getElementById('loginForm').classList.remove('hidden'); 
-}
-
-function showSignup() { 
-  document.getElementById('loginForm').classList.add('hidden'); 
-  document.getElementById('signupForm').classList.remove('hidden'); 
-}
-
-// Chat functions
-function getTimestamp() {
-  const now = new Date();
-  return now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-}
-
-function populateRecipients() {
-  const recipientSelect = document.getElementById('chatRecipient');
-  recipientSelect.innerHTML = '<option value="">Select a user...</option>';
-  users.forEach(u=>{
-    if(u.username !== localStorage.getItem('loggedInUser')){
-      const opt = document.createElement('option');
-      opt.value = u.username;
-      opt.textContent = u.username;
-      recipientSelect.appendChild(opt);
+    // Signup & Login
+    function signup() {
+      const username = document.getElementById("signupUsername").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      if (!username || !password) return alert("Fill all fields");
+      if (users.find(u => u.username === username)) return alert("User exists");
+      users.push({ username, password });
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Account created! Please login.");
+      showLogin();
     }
-  });
-}
+    function login() {
+      const username = document.getElementById("loginUsername").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      const user = users.find(u => u.username === username && u.password === password);
+      if (!user) return alert("Invalid login");
+      localStorage.setItem("loggedInUser", username);
+      if (!onlineUsers.includes(username)) {
+        onlineUsers.push(username);
+        localStorage.setItem("onlineUsers", JSON.stringify(onlineUsers));
+      }
+      document.getElementById("currentUser").textContent = username;
+      showMainContent();
+    }
+    function logout() {
+      const username = localStorage.getItem("loggedInUser");
+      onlineUsers = onlineUsers.filter(u => u !== username);
+      localStorage.setItem("onlineUsers", JSON.stringify(onlineUsers));
+      localStorage.removeItem("loggedInUser");
+      location.reload();
+    }
 
-function showChatMessages() {
-  const chatDiv = document.getElementById('chatMessages');
-  const loggedIn = localStorage.getItem('loggedInUser');
-  const recipient = document.getElementById('chatRecipient').value;
-  chatDiv.innerHTML = '';
-  if(!recipient) return;
-  messages
-    .filter(m => (m.from===loggedIn && m.to===recipient) || (m.from===recipient && m.to===loggedIn))
-    .forEach(m=>{
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'chatMessage ' + (m.from===loggedIn?'sent':'received');
-      msgDiv.innerHTML = m.text + '<span class="timestamp">['+m.timestamp+']</span>';
-      chatDiv.appendChild(msgDiv);
+    function showSignup() { document.getElementById("signupForm").classList.remove("hidden"); document.getElementById("loginForm").classList.add("hidden"); }
+    function showLogin() { document.getElementById("loginForm").classList.remove("hidden"); document.getElementById("signupForm").classList.add("hidden"); }
+
+    // Main Content
+    function showMainContent() {
+      document.getElementById("signupForm").classList.add("hidden");
+      document.getElementById("loginForm").classList.add("hidden");
+      document.getElementById("mainContent").classList.remove("hidden");
+      showPublicMessages();
+      showOnlineUsers();
+      showGroups();
+    }
+
+    // Public Chat
+    function sendPublicMessage() {
+      const text = document.getElementById("publicInput").value.trim();
+      if (!text) return;
+      const from = localStorage.getItem("loggedInUser");
+      publicMessages.push({ from, text, time: new Date().toLocaleTimeString() });
+      localStorage.setItem("publicMessages", JSON.stringify(publicMessages));
+      document.getElementById("publicInput").value = "";
+      showPublicMessages();
+    }
+    function showPublicMessages() {
+      const box = document.getElementById("publicMessages");
+      box.innerHTML = "";
+      publicMessages.forEach(m => {
+        const p = document.createElement("p");
+        p.textContent = `[${m.time}] ${m.from}: ${m.text}`;
+        box.appendChild(p);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Online Users
+    function showOnlineUsers() {
+      const list = document.getElementById("onlineList");
+      list.innerHTML = "";
+      const me = localStorage.getItem("loggedInUser");
+      onlineUsers.forEach(u => {
+        if (u !== me) {
+          const li = document.createElement("li");
+          li.textContent = "🟢 " + u;
+          li.onclick = () => openPrivateChat(u);
+          list.appendChild(li);
+        }
+      });
+    }
+
+    // Private Chat
+    function openPrivateChat(user) {
+      currentDM = user;
+      document.getElementById("privateChat").classList.remove("hidden");
+      document.getElementById("privateChatTitle").textContent = "Chat with " + user;
+      showPrivateMessages();
+    }
+    function sendPrivateMessage() {
+      if (!currentDM) return;
+      const text = document.getElementById("privateInput").value.trim();
+      if (!text) return;
+      const from = localStorage.getItem("loggedInUser");
+      const key = getChatKey(from, currentDM);
+      if (!privateChats[key]) privateChats[key] = [];
+      privateChats[key].push({ from, text, time: new Date().toLocaleTimeString() });
+      localStorage.setItem("privateChats", JSON.stringify(privateChats));
+      document.getElementById("privateInput").value = "";
+      showPrivateMessages();
+    }
+    function showPrivateMessages() {
+      const box = document.getElementById("privateMessages");
+      if (!currentDM) return;
+      const me = localStorage.getItem("loggedInUser");
+      const key = getChatKey(me, currentDM);
+      const msgs = privateChats[key] || [];
+      box.innerHTML = "";
+      msgs.forEach(m => {
+        const p = document.createElement("p");
+        p.textContent = `[${m.time}] ${m.from}: ${m.text}`;
+        box.appendChild(p);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+    function getChatKey(u1, u2) { return [u1, u2].sort().join("_"); }
+
+    // Group Chat
+    function createGroup() {
+      const name = document.getElementById("newGroupName").value.trim();
+      if (!name) return alert("Enter a group name");
+      if (groups.includes(name)) return alert("Group exists");
+      groups.push(name);
+      localStorage.setItem("groups", JSON.stringify(groups));
+      document.getElementById("newGroupName").value = "";
+      showGroups();
+    }
+    function showGroups() {
+      const list = document.getElementById("groupList");
+      list.innerHTML = "";
+      groups.forEach(g => {
+        const li = document.createElement("li");
+        li.textContent = "👥 " + g;
+        li.onclick = () => openGroupChat(g);
+        list.appendChild(li);
+      });
+    }
+    function openGroupChat(group) {
+      currentGroup = group;
+      document.getElementById("activeGroupChat").classList.remove("hidden");
+      document.getElementById("activeGroupTitle").textContent = "Group: " + group;
+      showGroupMessages();
+    }
+    function sendGroupMessage() {
+      if (!currentGroup) return;
+      const text = document.getElementById("groupInput").value.trim();
+      if (!text) return;
+      const from = localStorage.getItem("loggedInUser");
+      if (!groupChats[currentGroup]) groupChats[currentGroup] = [];
+      groupChats[currentGroup].push({ from, text, time: new Date().toLocaleTimeString() });
+      localStorage.setItem("groupChats", JSON.stringify(groupChats));
+      document.getElementById("groupInput").value = "";
+      showGroupMessages();
+    }
+    function showGroupMessages() {
+      const box = document.getElementById("groupMessages");
+      if (!currentGroup) return;
+      const msgs = groupChats[currentGroup] || [];
+      box.innerHTML = "";
+      msgs.forEach(m => {
+        const p = document.createElement("p");
+        p.textContent = `[${m.time}] ${m.from}: ${m.text}`;
+        box.appendChild(p);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Sync across tabs
+    window.addEventListener("storage", e => {
+      if (e.key === "publicMessages") { publicMessages = JSON.parse(e.newValue) || []; showPublicMessages(); }
+      if (e.key === "onlineUsers") { onlineUsers = JSON.parse(e.newValue) || []; showOnlineUsers(); }
+      if (e.key === "privateChats") { privateChats = JSON.parse(e.newValue) || {}; if (currentDM) showPrivateMessages(); }
+      if (e.key === "groups") { groups = JSON.parse(e.newValue) || []; showGroups(); }
+      if (e.key === "groupChats") { groupChats = JSON.parse(e.newValue) || {}; if (currentGroup) showGroupMessages(); }
     });
-  chatDiv.scrollTop = chatDiv.scrollHeight;
-}
 
-function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  const loggedIn = localStorage.getItem('loggedInUser');
-  const recipient = document.getElementById('chatRecipient').value;
-  if(!text || !recipient) return alert('Select a recipient and type a message');
-  messages.push({ from: loggedIn, to: recipient, text, timestamp:getTimestamp() });
-  localStorage.setItem('messages',JSON.stringify(messages));
-  input.value = '';
-  showChatMessages();
-}
-
-// Live-update across tabs
-window.addEventListener('storage', (event) => {
-  if(event.key === 'messages'){
-    messages = JSON.parse(event.newValue) || [];
-    showChatMessages();
-  }
-});
-</script>
+    // Auto-login restore
+    if (localStorage.getItem("loggedInUser")) {
+      document.getElementById("currentUser").textContent = localStorage.getItem("loggedInUser");
+      if (!onlineUsers.includes(localStorage.getItem("loggedInUser"))) {
+        onlineUsers.push(localStorage.getItem("loggedInUser"));
+        localStorage.setItem("onlineUsers", JSON.stringify(onlineUsers));
+      }
+      showMainContent();
+    }
+  </script>
 </body>
 </html>
