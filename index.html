@@ -117,6 +117,13 @@
   .dropdown a { display:block; padding:12px 15px; text-decoration:none; color:#fff; font-weight:bold; transition:background 0.3s; }
   .dropdown a:hover { background:#222; }
 
+  /* Chat room */
+  #chatMessages div { margin-bottom:8px; padding:5px 8px; border-radius:6px; background:#333; color:#fff; }
+  #chatMessages div.user { background:#32CD32; color:#000; font-weight:bold; }
+  #chatMessages div.issue { background:#FF4500; color:#fff; font-weight:bold; font-style:italic; }
+  #chatMessages div.system { background:#555; color:#fff; font-style:italic; }
+  #chatMessages div span.timestamp { font-size: 10px; color: #ccc; margin-left: 8px; }
+
   /* Copyright */
   .copyright {
     text-align:center;
@@ -176,11 +183,21 @@
     <h2>MY SERVICES</h2>
     <p>Select below:</p>
     <a href="https://t.me/TrashcoreBot" class="button telegram"><i class="fab fa-telegram-plane"></i> Server 1</a>
-<a href="http://t.me/Traschoreultra_bot" class="button telegram"><i class="fab fa-telegram-plane"></i> Server 2</a>
-<a href="https://t.me/theaccidentallygeniuses" class="button telegram"><i class="fab fa-telegram-plane"></i> Join Telegram group</a>
+    <a href="http://t.me/Traschoreultra_bot" class="button telegram"><i class="fab fa-telegram-plane"></i> Server 2</a>
+    <a href="https://t.me/theaccidentallygeniuses" class="button telegram"><i class="fab fa-telegram-plane"></i> Join Telegram group</a>
     <a href="https://whatsapp.com/channel/0029VafrbsKG8l5EFBDDCy41" class="button whatsapp"><i class="fab fa-whatsapp"></i> Join WhatsApp Channel</a>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
+
+  <!-- Chat Room -->
+  <div class="card" id="chatRoom">
+    <h2>Chat Room / Raise Issues</h2>
+    <div id="chatMessages" style="height:200px; overflow-y:auto; background:#222; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left;"></div>
+    <input type="text" id="chatInput" placeholder="Type your message..." style="width:60%; padding:8px; border-radius:6px; border:none;">
+    <button onclick="sendMessage()" style="width:15%; display:inline-block; margin-left:5px;">Send</button>
+    <button onclick="raiseIssue()" style="width:15%; display:inline-block; margin-left:5px; background:#FF4500; color:white;">Raise Issue</button>
+  </div>
+
   <div style="margin-top: 20px;">
     <audio id="backgroundAudio" controls autoplay loop>
       <source src="https://files.catbox.moe/85xho5.mp3" type="audio/mpeg">
@@ -202,9 +219,11 @@ if(localStorage.getItem('loggedInUser')) {
   showMainContent(); 
 }
 
+// Validation
 function isValidUsername(name) { return /^[a-zA-Z0-9_]{3,15}$/.test(name); }
 function isValidPassword(pw) { return pw.length >=6; }
 
+// Signup/Login/Logout
 function signup() {
   const username = document.getElementById('signupUsername').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
@@ -259,19 +278,72 @@ function showSignup() {
 // Hamburger menu toggle
 const menuBtn = document.getElementById('menuBtn');
 const dropdown = document.getElementById('dropdownMenu');
-
 menuBtn.addEventListener('click', () => { 
   dropdown.classList.toggle('show'); 
   menuBtn.classList.toggle('open'); 
 });
-
-// Close dropdown if clicked outside
 window.addEventListener('click', (event) => { 
   if (!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn *')) {
     dropdown.classList.remove('show'); 
     menuBtn.classList.remove('open');
   }
 });
+
+// Chat functionality with issues and timestamps
+let chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+
+function getTimestamp() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,'0');
+  const m = now.getMinutes().toString().padStart(2,'0');
+  return `${h}:${m}`;
+}
+
+function showChatMessages() {
+  const chatDiv = document.getElementById('chatMessages');
+  chatDiv.innerHTML = '';
+  chatMessages.forEach(msg => {
+    const msgDiv = document.createElement('div');
+    const timestampSpan = document.createElement('span');
+    timestampSpan.className = 'timestamp';
+    timestampSpan.textContent = `[${msg.timestamp}]`;
+    msgDiv.textContent = msg.username + ': ' + msg.text + ' ';
+    msgDiv.appendChild(timestampSpan);
+
+    if(msg.type === 'issue') msgDiv.className = 'issue';
+    else msgDiv.className = 'user';
+
+    chatDiv.appendChild(msgDiv);
+  });
+  chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  const username = localStorage.getItem('loggedInUser') || 'Guest';
+  if(text==='') return;
+  chatMessages.push({ username, text, type:'chat', timestamp: getTimestamp() });
+  localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+  input.value = '';
+  showChatMessages();
+}
+
+function raiseIssue() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  const username = localStorage.getItem('loggedInUser') || 'Guest';
+  if(text==='') return;
+  chatMessages.push({ username, text, type:'issue', timestamp: getTimestamp() });
+  localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+  input.value = '';
+  showChatMessages();
+}
+
+// Show messages after login
+if(localStorage.getItem('loggedInUser')){
+  showChatMessages();
+}
 </script>
 
 </body>
