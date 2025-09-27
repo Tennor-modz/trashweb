@@ -76,11 +76,21 @@
         margin: 0 0 15px 0;
         font-size: 20px;
     }
-    .site-card a {
-        display: inline-block;
+
+    /* Red button styling */
+    .site-card a.button {
+        background-color: #e74c3c; /* Red color */
         color: white;
-        text-decoration: underline;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
         font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .site-card a.button:hover {
+        background-color: #c0392b; /* Darker red on hover */
     }
 
     /* Colorful abstract gradients for each card */
@@ -130,22 +140,22 @@
 <div class="container">
     <div class="site-card card1">
         <h2>TRASHCORE-Bot Web</h2>
-        <a href="https://openai-two-pi.vercel.app/" target="_blank">Open in new tab</a>
+        <a href="https://openai-two-pi.vercel.app/" target="_blank" class="button">Open in New Tab</a>
     </div>
 
     <div class="site-card card2">
         <h2>Website 2</h2>
-        <a href="https://www.example.com" target="_blank">Open in new tab</a>
+        <a href="https://www.example.com" target="_blank" class="button">Open in New Tab</a>
     </div>
 
     <div class="site-card card3">
         <h2>Website 3</h2>
-        <a href="https://www.example2.com" target="_blank">Open in new tab</a>
+        <a href="https://www.example2.com" target="_blank" class="button">Open in New Tab</a>
     </div>
 
     <div class="site-card card4">
         <h2>Website 4</h2>
-        <a href="https://www.example3.com" target="_blank">Open in new tab</a>
+        <a href="https://www.example3.com" target="_blank" class="button">Open in New Tab</a>
     </div>
 </div>
 
