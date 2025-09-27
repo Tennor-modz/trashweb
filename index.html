@@ -14,7 +14,6 @@
         overflow-x: hidden;
     }
 
-    /* Black waves background */
     body::before, body::after {
         content: '';
         position: absolute;
@@ -44,24 +43,6 @@
     }
     h1 { margin: 0; }
 
-    .header-buttons, .footer-buttons {
-        margin-top: 10px;
-    }
-    .header-buttons button, .footer-buttons button {
-        background: #e67e22;
-        border: none;
-        color: white;
-        font-weight: bold;
-        padding: 8px 15px;
-        margin: 0 5px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    .header-buttons button:hover, .footer-buttons button:hover {
-        background: #d35400;
-    }
-
     .container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -89,10 +70,12 @@
         transform: translateY(-5px);
         box-shadow: 0 8px 25px rgba(0,0,0,0.5);
     }
+
     .site-card h2 {
         margin: 0 0 15px 0;
         font-size: 20px;
     }
+
     .site-card a.button {
         background-color: #e74c3c;
         color: white;
@@ -126,10 +109,75 @@
         z-index: 0;
     }
     .site-card > * { position: relative; z-index: 1; }
+
     @keyframes glowRotate {
         0% { transform: rotate(0deg); }
         50% { transform: rotate(180deg); }
         100% { transform: rotate(360deg); }
+    }
+
+    /* Comment Section */
+    .comments {
+        background: #fff;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 1;
+        position: relative;
+    }
+    .comments h2 {
+        margin-top: 0;
+        color: #333;
+    }
+    .comment-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .comment-form input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+    .comment-form button {
+        background: #4caf50;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .comment-form button:hover {
+        background: #388e3c;
+    }
+    .comment {
+        background: #f4f4f4;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .comment p {
+        margin: 0 0 5px;
+    }
+    .actions {
+        display: flex;
+        gap: 10px;
+    }
+    .actions button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .actions button.active {
+        font-weight: bold;
+        color: #4caf50;
+    }
+    .actions button:hover {
+        text-decoration: underline;
     }
 
     footer {
@@ -147,10 +195,6 @@
 <header>
     <h1>Trashcore Multi-Site Dashboard</h1>
     <p>Access multiple websites from one place</p>
-    <div class="header-buttons">
-        <button onclick="location.reload()">🔄 Refresh</button>
-        <button onclick="exitApp()">❌ Exit</button>
-    </div>
 </header>
 
 <div class="container">
@@ -172,21 +216,112 @@
     </div>
 </div>
 
+<!-- Comment Section -->
+<div class="comments">
+    <h2>Comments</h2>
+    <div class="comment-form">
+        <input type="text" id="commentInput" placeholder="Write a comment...">
+        <button onclick="addComment()">Post</button>
+    </div>
+    <div id="commentList"></div>
+</div>
+
 <footer>
     &copy; 2025 Trashcore Dashboard
-    <div class="footer-buttons">
-        <button onclick="location.reload()">🔄 Refresh</button>
-        <button onclick="exitApp()">❌ Exit</button>
-    </div>
 </footer>
 
 <script>
-function exitApp() {
-    // Attempt to close window
-    window.close();
-    // For PWAs or mobile browsers that don't allow close:
-    alert("Exit action may not be supported in your browser.");
-}
+    function addComment() {
+        const input = document.getElementById('commentInput');
+        const text = input.value.trim();
+        if (text === "") return;
+
+        const commentList = document.getElementById('commentList');
+
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'comment';
+
+        const p = document.createElement('p');
+        p.textContent = text;
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        // Like Button
+        const likeBtn = document.createElement('button');
+        likeBtn.textContent = '👍 0';
+        likeBtn.dataset.count = 0;
+        likeBtn.dataset.active = "false";
+
+        // Dislike Button
+        const dislikeBtn = document.createElement('button');
+        dislikeBtn.textContent = '👎 0';
+        dislikeBtn.dataset.count = 0;
+        dislikeBtn.dataset.active = "false";
+
+        // Like click logic
+        likeBtn.onclick = () => {
+            let count = parseInt(likeBtn.dataset.count);
+            let dislikeCount = parseInt(dislikeBtn.dataset.count);
+
+            if (likeBtn.dataset.active === "false") {
+                count++;
+                likeBtn.dataset.active = "true";
+                likeBtn.classList.add("active");
+
+                // remove dislike if active
+                if (dislikeBtn.dataset.active === "true") {
+                    dislikeCount--;
+                    dislikeBtn.dataset.active = "false";
+                    dislikeBtn.classList.remove("active");
+                    dislikeBtn.dataset.count = dislikeCount;
+                    dislikeBtn.textContent = `👎 ${dislikeCount}`;
+                }
+            } else {
+                count--;
+                likeBtn.dataset.active = "false";
+                likeBtn.classList.remove("active");
+            }
+            likeBtn.dataset.count = count;
+            likeBtn.textContent = `👍 ${count}`;
+        };
+
+        // Dislike click logic
+        dislikeBtn.onclick = () => {
+            let count = parseInt(dislikeBtn.dataset.count);
+            let likeCount = parseInt(likeBtn.dataset.count);
+
+            if (dislikeBtn.dataset.active === "false") {
+                count++;
+                dislikeBtn.dataset.active = "true";
+                dislikeBtn.classList.add("active");
+
+                // remove like if active
+                if (likeBtn.dataset.active === "true") {
+                    likeCount--;
+                    likeBtn.dataset.active = "false";
+                    likeBtn.classList.remove("active");
+                    likeBtn.dataset.count = likeCount;
+                    likeBtn.textContent = `👍 ${likeCount}`;
+                }
+            } else {
+                count--;
+                dislikeBtn.dataset.active = "false";
+                dislikeBtn.classList.remove("active");
+            }
+            dislikeBtn.dataset.count = count;
+            dislikeBtn.textContent = `👎 ${count}`;
+        };
+
+        actions.appendChild(likeBtn);
+        actions.appendChild(dislikeBtn);
+
+        commentDiv.appendChild(p);
+        commentDiv.appendChild(actions);
+
+        commentList.prepend(commentDiv);
+        input.value = "";
+    }
 </script>
 
 </body>
