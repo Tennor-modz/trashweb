@@ -85,10 +85,10 @@
         font-weight: bold;
     }
 
-    /* Gradient backgrounds for different cards */
-    .google { background: linear-gradient(135deg, #4285F4, #34A853); }
-    .wikipedia { background: linear-gradient(135deg, #FF9900, #FF5722); }
-    .youtube { background: linear-gradient(135deg, #FF0000, #C4302B); }
+    /* Different neutral gradients for each card */
+    .card1 { background: linear-gradient(135deg, #444, #666); }
+    .card2 { background: linear-gradient(135deg, #555, #777); }
+    .card3 { background: linear-gradient(135deg, #666, #888); }
 
     /* Animated glowing effect */
     .site-card::before {
@@ -129,21 +129,27 @@
 </header>
 
 <div class="container">
-    <div class="site-card google">
-        <h2>TRASHCORE-Bot web</h2>
+    <div class="site-card card1">
+        <h2>TRASHCORE-Bot Web</h2>
         <iframe src="https://files.catbox.moe/7x996w.jpg"></iframe>
         <a href="https://openai-two-pi.vercel.app/" target="_blank">Open in new tab</a>
     </div>
 
-    <div class="site-card youtube">
-        <h2>YouTube</h2>
+    <div class="site-card card2">
+        <h2>Website 2</h2>
         <iframe src="https://files.catbox.moe/7x996w.jpg"></iframe>
-        <a href="https://www.youtube.com" target="_blank">Open in new tab</a>
+        <a href="https://www.example.com" target="_blank">Open in new tab</a>
+    </div>
+
+    <div class="site-card card3">
+        <h2>Website 3</h2>
+        <iframe src="https://files.catbox.moe/7x996w.jpg"></iframe>
+        <a href="https://www.example2.com" target="_blank">Open in new tab</a>
     </div>
 </div>
 
 <footer>
-    &copy; 2025 Trashcore dashboard 
+    &copy; 2025 Trashcore Dashboard
 </footer>
 
 </body>
