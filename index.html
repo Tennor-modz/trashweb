@@ -3,147 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Professional Website Hub</title>
+<title>My Multi-Site Dashboard</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; }
-header { background:#4a90e2; color:white; padding:20px; text-align:center; }
-main { padding:20px; max-width:1000px; margin:auto; }
-.category { margin-bottom:20px; border-radius:10px; overflow:hidden; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
-.category-header { display:flex; justify-content:space-between; align-items:center; padding:10px; cursor:pointer; color:white; }
-.category-websites { background:#fff; padding:10px; display:none; }
-.site-card { display:flex; align-items:center; justify-content:space-between; background:#f1f5f9; padding:8px; margin:5px 0; border-radius:5px; cursor:grab; }
-.site-card.dragging { opacity:0.5; }
-.site-info { display:flex; align-items:center; gap:10px; }
-.site-info img { width:20px; height:20px; }
-.add-section, .search-section { margin-bottom:20px; }
-input, select, button { padding:8px; margin-right:10px; border-radius:5px; border:1px solid #ccc; }
-button { background:#4a90e2; color:white; border:none; cursor:pointer; }
-button.remove { background:red; }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: #4a90e2;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    h1 {
+        margin: 0;
+    }
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    .site-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 10px;
+        transition: transform 0.2s;
+    }
+    .site-card:hover {
+        transform: scale(1.05);
+    }
+    .site-card iframe {
+        width: 100%;
+        height: 200px;
+        border: none;
+        border-radius: 5px;
+    }
+    .site-card h2 {
+        margin: 10px 0 5px 0;
+        font-size: 18px;
+    }
+    .site-card a {
+        display: inline-block;
+        margin-top: 5px;
+        color: #4a90e2;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .site-card a:hover {
+        text-decoration: underline;
+    }
+    footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #ddd;
+        margin-top: 20px;
+    }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Professional Website Hub</h1>
-  <p>Organize your websites with colors, icons, and folders!</p>
+    <h1>My Multi-Site Dashboard</h1>
+    <p>Access multiple websites from one place</p>
 </header>
 
-<main>
-  <div class="add-section">
-    <input type="text" id="categoryName" placeholder="New Category Name">
-    <input type="color" id="categoryColor" value="#4a90e2">
-    <button onclick="addCategory()">Add Category</button>
-  </div>
+<div class="container">
+    <div class="site-card">
+        <h2>Google</h2>
+        <iframe src="https://www.google.com"></iframe>
+        <a href="https://www.google.com" target="_blank">Open in new tab</a>
+    </div>
 
-  <div class="add-section">
-    <select id="selectCategory"><option value="">Select Category</option></select>
-    <input type="text" id="siteName" placeholder="Website Name">
-    <input type="url" id="siteURL" placeholder="Website URL">
-    <button onclick="addSite()">Add Website</button>
-  </div>
+    <div class="site-card">
+        <h2>Wikipedia</h2>
+        <iframe src="https://www.wikipedia.org"></iframe>
+        <a href="https://www.wikipedia.org" target="_blank">Open in new tab</a>
+    </div>
 
-  <div class="search-section">
-    <input type="text" id="searchInput" placeholder="Search websites..." oninput="renderCategories()">
-  </div>
+    <div class="site-card">
+        <h2>YouTube</h2>
+        <iframe src="https://www.youtube.com"></iframe>
+        <a href="https://www.youtube.com" target="_blank">Open in new tab</a>
+    </div>
 
-  <div id="categoriesContainer"></div>
-</main>
+    <!-- Add more site cards here -->
+</div>
 
-<script>
-let categories = JSON.parse(localStorage.getItem('categories')) || [];
-let draggedSite = null;
-
-function saveCategories() {
-  localStorage.setItem('categories', JSON.stringify(categories));
-  renderCategories();
-  populateCategorySelect();
-}
-
-function addCategory() {
-  const name = document.getElementById('categoryName').value.trim();
-  const color = document.getElementById('categoryColor').value;
-  if(!name) return alert("Enter category name");
-  if(categories.some(cat => cat.name === name)) return alert("Category exists");
-  categories.push({ name, color, websites: [], collapsed:false });
-  document.getElementById('categoryName').value='';
-  saveCategories();
-}
-
-function addSite() {
-  const select=document.getElementById('selectCategory');
-  const name=document.getElementById('siteName').value.trim();
-  const url=document.getElementById('siteURL').value.trim();
-  const index=select.selectedIndex-1;
-  if(index<0) return alert("Select a category");
-  if(!name || !url) return alert("Enter name and URL");
-  categories[index].websites.push({ name, url });
-  document.getElementById('siteName').value='';
-  document.getElementById('siteURL').value='';
-  saveCategories();
-}
-
-function removeSite(catIndex, siteIndex){ categories[catIndex].websites.splice(siteIndex,1); saveCategories(); }
-function removeCategory(catIndex){ if(!confirm("Remove this category and all its websites?")) return; categories.splice(catIndex,1); saveCategories(); }
-function toggleCategory(catIndex){ categories[catIndex].collapsed=!categories[catIndex].collapsed; saveCategories(); }
-
-function renderCategories() {
-  const container=document.getElementById('categoriesContainer');
-  const searchTerm=document.getElementById('searchInput').value.toLowerCase();
-  container.innerHTML='';
-  categories.forEach((cat, catIndex)=>{
-    const filteredWebsites = cat.websites.filter(site => site.name.toLowerCase().includes(searchTerm));
-    if(filteredWebsites.length === 0 && searchTerm) return;
-    const catDiv=document.createElement('div'); catDiv.className='category';
-    const headerDiv=document.createElement('div'); headerDiv.className='category-header'; headerDiv.style.backgroundColor=cat.color;
-    headerDiv.innerHTML=`<span>${cat.name}</span><span><button class="remove" onclick="removeCategory(${catIndex})">Remove</button></span>`;
-    headerDiv.addEventListener('click',()=>toggleCategory(catIndex));
-    catDiv.appendChild(headerDiv);
-    const sitesDiv=document.createElement('div'); sitesDiv.className='category-websites'; sitesDiv.style.display=cat.collapsed?'none':'block';
-    filteredWebsites.forEach((site, siteIndex)=>{
-      const siteDiv=document.createElement('div'); siteDiv.className='site-card'; siteDiv.draggable=true;
-      siteDiv.innerHTML=`
-        <div class="site-info">
-          <img src="https://www.google.com/s2/favicons?domain=${site.url}" alt="icon">
-          <span>${site.name}</span>
-        </div>
-        <div>
-          <a href="${site.url}" target="_blank">Open</a>
-          <button class="remove" onclick="removeSite(${catIndex},${siteIndex})">Remove</button>
-        </div>
-      `;
-      siteDiv.addEventListener('dragstart',()=>{ draggedSite={catIndex,siteIndex}; siteDiv.classList.add('dragging'); });
-      siteDiv.addEventListener('dragend',()=>{ draggedSite=null; siteDiv.classList.remove('dragging'); });
-      siteDiv.addEventListener('dragover', e=>e.preventDefault());
-      siteDiv.addEventListener('drop', ()=>{
-        if(draggedSite){
-          const dragged = categories[draggedSite.catIndex].websites.splice(draggedSite.siteIndex,1)[0];
-          categories[catIndex].websites.splice(siteIndex,0,dragged);
-          saveCategories();
-        }
-      });
-      sitesDiv.appendChild(siteDiv);
-    });
-    sitesDiv.addEventListener('dragover', e=>e.preventDefault());
-    sitesDiv.addEventListener('drop', ()=>{
-      if(draggedSite && draggedSite.catIndex!==catIndex){
-        const dragged = categories[draggedSite.catIndex].websites.splice(draggedSite.siteIndex,1)[0];
-        categories[catIndex].websites.push(dragged);
-        saveCategories();
-      }
-    });
-    catDiv.appendChild(sitesDiv);
-    container.appendChild(catDiv);
-  });
-}
-
-function populateCategorySelect() {
-  const select=document.getElementById('selectCategory'); select.innerHTML='<option value="">Select Category</option>';
-  categories.forEach(cat => { const option=document.createElement('option'); option.value=cat.name; option.textContent=cat.name; select.appendChild(option); });
-}
-
-renderCategories();
-populateCategorySelect();
-</script>
+<footer>
+    &copy; 2025 My Multi-Site Dashboard
+</footer>
 
 </body>
 </html>
